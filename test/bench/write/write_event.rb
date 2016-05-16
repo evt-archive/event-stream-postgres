@@ -1,3 +1,7 @@
 require_relative '../bench_init'
 
-context "Wr"
+context "Write Event" do
+  test "Event is written" do
+
+  end
+end
