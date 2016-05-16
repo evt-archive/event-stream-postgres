@@ -1,7 +1,7 @@
 # -*- encoding: utf-8 -*-
 Gem::Specification.new do |s|
   s.name = 'event_stream-postgres'
-  s.version = '0.0.0.1'
+  s.version = '0.0.0.0'
   s.summary = 'Event stream client for PostgreSQL'
   s.description = ' '
 
@@ -14,6 +14,9 @@ Gem::Specification.new do |s|
   s.files = Dir.glob('{lib}/**/*')
   s.platform = Gem::Platform::RUBY
   s.required_ruby_version = '>= 2.2.3'
+
+  s.executables = ['install-event-stream-database', 'uninstall-event-stream-database']
+  s.bindir = 'bin'
 
   s.add_runtime_dependency 'telemetry-logger'
   s.add_runtime_dependency 'casing'
