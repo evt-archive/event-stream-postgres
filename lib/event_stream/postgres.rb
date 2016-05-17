@@ -1,3 +1,4 @@
+require 'sequel'
 require 'pg'
 
 require 'casing'
