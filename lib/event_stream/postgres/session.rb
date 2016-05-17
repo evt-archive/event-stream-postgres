@@ -21,7 +21,7 @@ module EventStream
 
           settings.set(instance)
 
-          connect(instance)
+          connect(instance, connection)
         end
       end
 
@@ -33,16 +33,30 @@ module EventStream
         instance
       end
 
-      def self.connect(instance)
+      def self.connect(instance, connection=nil)
+        logger.trace "Connecting to database"
+
+        if connection
+          logger.debug "Reusing existing connection"
+        else
+          connection = build_connection(instance)
+        end
+
+        instance.connection = connection
+
+        logger.trace "Connected to database"
+
+        connection
+      end
+
+      def self.build_connection(instance)
         settings = instance.settings
-        logger.trace "Connecting to database (Settings: #{LogText.settings(settings).inspect})"
+        logger.trace "Building new connecting to database (Settings: #{LogText.settings(settings).inspect})"
 
         connection = PG::Connection.open(settings)
         connection.type_map_for_results = PG::BasicTypeMapForResults.new(connection)
 
-        instance.connection = connection
-
-        logger.trace "Connected to database (Settings: #{LogText.settings(settings).inspect})"
+        logger.trace "Built new connection to database (Settings: #{LogText.settings(settings).inspect})"
 
         connection
       end
