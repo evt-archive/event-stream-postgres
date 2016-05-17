@@ -36,10 +36,10 @@ module EventStream
       def self.connect(instance, connection=nil)
         logger.trace "Connecting to database"
 
-        if connection
-          logger.debug "Reusing existing connection"
-        else
+        if connection.nil?
           connection = build_connection(instance)
+        else
+          logger.debug "Reusing existing connection"
         end
 
         instance.connection = connection
