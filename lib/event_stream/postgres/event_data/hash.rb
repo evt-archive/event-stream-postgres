@@ -22,7 +22,7 @@ module EventStream
             end
 
             def self.deserialize(text)
-              json_formatted_data = JSON.parse(text, :symbolize_names => true)
+              json_formatted_data = ::JSON.parse(text, :symbolize_names => true)
               Casing::Underscore.(json_formatted_data)
             end
           end
