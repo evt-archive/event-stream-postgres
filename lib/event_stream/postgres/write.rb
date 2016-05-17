@@ -14,7 +14,7 @@ module EventStream
       end
 
       def insert
-        conn = PG::Connection.open(:dbname => 'eventide')
+        conn = PG::Connection.open(:dbname => 'eventstream')
         conn.type_map_for_results = PG::BasicTypeMapForResults.new(conn)
 
         args = [
