@@ -11,7 +11,10 @@ context "Insert Event Data" do
 
   write = EventStream::Postgres::Write.new(stream_name, type, data, metadata)
 
-  test do
-    stream_version = write.insert
+  stream_version = write.insert
+  __logger.focus stream_version
+
+  test "Result is stream version" do
+    refute(stream_version.nil?)
   end
 end
