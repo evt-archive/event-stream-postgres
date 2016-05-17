@@ -9,7 +9,8 @@ module EventStream
         setting s
       end
 
-      dependency :connection, PG::Connection
+      attr_accessor :connection
+
       dependency :logger, Telemetry::Logger
 
       def self.build(connection: nil, settings: nil)
@@ -20,9 +21,7 @@ module EventStream
 
           settings.set(instance)
 
-          instance.connection = connect(instance)
-
-          logger.opt_debug "Built HTTP session (Host: #{instance.host}, Port: #{instance.port})"
+          connect(instance)
         end
       end
 
@@ -36,24 +35,30 @@ module EventStream
 
       def self.connect(instance)
         settings = instance.settings
-        logger.trace "Connecting to database (Settings: #{settings.inspect})"
+        logger.trace "Connecting to database (Settings: #{LogText.settings(settings).inspect})"
 
         connection = PG::Connection.open(settings)
         connection.type_map_for_results = PG::BasicTypeMapForResults.new(connection)
 
         instance.connection = connection
 
-        logger.trace "Connected to database (Settings: #{settings.inspect})"
+        logger.trace "Connected to database (Settings: #{LogText.settings(settings).inspect})"
 
         connection
       end
 
-      def connected?
-        connection.status == PG::CONNECTION_OK
+      def connect
+        self.class.connect(self)
       end
+
+      def connected?
+        !connection.nil? && connection.status == PG::CONNECTION_OK
+      end
+      alias :open? :connected?
 
       def close
         connection.close
+        connection = nil
       end
 
       def reset
@@ -62,14 +67,27 @@ module EventStream
 
       def settings
         settings = {}
-        self.class.settings do |s|
-          settings[s] = public_send(s)
+        self.class.settings.each do |s|
+          val = public_send(s)
+          settings[s] = val unless val.nil?
         end
         settings
       end
 
       def self.logger
         @logger ||= Telemetry::Logger.get self
+      end
+
+      module LogText
+        def self.settings(settings)
+          s = settings.dup
+
+          if s.has_key?(:password)
+            s[:password] = '(hidden)'
+          end
+
+          s
+        end
       end
     end
   end

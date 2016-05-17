@@ -14,7 +14,6 @@ module EventStream
           module JSON
             def self.data
               data = Write.data
-
               Casing::Camel.(data, symbol_to_string: true)
             end
 
@@ -23,7 +22,7 @@ module EventStream
             end
           end
 
-          def self.example(i: nil, type: nil, data: nil, metadata: nil)
+          def self.example(type: nil, data: nil, metadata: nil)
             type ||= EventData.type
             data ||= EventData.data
             metadata ||= EventData::Metadata.data
