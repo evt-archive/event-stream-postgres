@@ -19,7 +19,7 @@ module EventStream
       end
 
       def self.build(stream_name, write_event, expected_version: nil, session: nil)
-        new.tap(stream_name, write_event.type, write_event.data, write_event.metadata, expected_version) do |instance|
+        new(stream_name, write_event.type, write_event.data, write_event.metadata, expected_version: expected_version).tap do |instance|
           instance.configure(session: session)
         end
       end
