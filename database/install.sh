@@ -11,14 +11,14 @@ echo
 
 if [ -z ${DATABASE_USER+x} ]; then
   echo "(DATABASE_USER is not set)"
-  user=eventide
+  user=eventstream
 else
   user=$DATABASE_USER
 fi
 
 if [ -z ${DATABASE_NAME+x} ]; then
   echo "(DATABASE_NAME is not set)"
-  database=eventide
+  database=eventstream
 else
   database=$DATABASE_NAME
 fi
