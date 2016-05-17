@@ -1,7 +1,6 @@
 CREATE OR REPLACE FUNCTION write_event(
-  id uuid,
-  type varchar,
   stream varchar,
+  type varchar,
   data jsonb,
   metadata jsonb DEFAULT NULL,
   expected_version int DEFAULT NULL
@@ -10,6 +9,7 @@ RETURNS int
 AS $$
 DECLARE
   stream_version int;
+  next_version int;
   category varchar;
 BEGIN
   stream_version := stream_version(stream);
@@ -22,32 +22,30 @@ BEGIN
     end if;
   end if;
 
-  stream_version := stream_version + 1;
+  next_version := stream_version + 1;
 
   category := category(stream);
 
   insert into "events"
     (
-      "id",
-      "type",
       "stream",
       "stream_position",
+      "type",
       "category",
       "data",
       "metadata"
     )
   values
     (
-      id,
-      type,
       stream,
-      stream_version,
+      next_version,
+      type,
       category,
       data,
       metadata
     )
   ;
 
-  return stream_version;
+  return next_version;
 END;
 $$ LANGUAGE plpgsql;
