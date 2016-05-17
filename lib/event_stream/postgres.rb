@@ -4,7 +4,6 @@ require 'pg'
 require 'casing'
 require 'clock'
 require 'dependency' ; Dependency.activate
-require 'identifier/uuid'
 require 'schema'
 require 'initializer'; Initializer.activate
 require 'serialize'
