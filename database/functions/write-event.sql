@@ -1,5 +1,5 @@
 CREATE OR REPLACE FUNCTION write_event(
-  stream varchar,
+  stream_name varchar,
   type varchar,
   data jsonb,
   metadata jsonb DEFAULT NULL,
@@ -24,11 +24,11 @@ BEGIN
 
   next_version := stream_version + 1;
 
-  category := category(stream);
+  category := category(stream_name);
 
   insert into "events"
     (
-      "stream",
+      "stream_name",
       "stream_position",
       "type",
       "category",
@@ -37,7 +37,7 @@ BEGIN
     )
   values
     (
-      stream,
+      stream_name,
       next_version,
       type,
       category,
