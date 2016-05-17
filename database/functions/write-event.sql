@@ -1,9 +1,9 @@
 CREATE OR REPLACE FUNCTION write_event(
-  stream varchar,
-  type varchar,
-  data jsonb,
-  metadata jsonb DEFAULT NULL,
-  expected_version int DEFAULT NULL
+  _stream_name varchar,
+  _type varchar,
+  _data jsonb,
+  _metadata jsonb DEFAULT NULL,
+  _expected_version int DEFAULT NULL
 )
 RETURNS int
 AS $$
@@ -12,11 +12,11 @@ DECLARE
   next_version int;
   category varchar;
 BEGIN
-  stream_version := stream_version(stream);
+  stream_version := stream_version(_stream_name);
 
-  if expected_version is not null then
-    if expected_version != stream_version then
-      raise exception 'Wrong expected version: % (Stream: %, Stream Version: %)', expected_version, stream, stream_version using
+  if _expected_version is not null then
+    if _expected_version != stream_version then
+      raise exception 'Wrong expected version: % (Stream: %, Stream Version: %)', _expected_version, _stream_name, stream_version using
         errcode='XPCTV',
         hint='The event cannot be written if the stream version and expected verion do not match';
     end if;
@@ -24,11 +24,11 @@ BEGIN
 
   next_version := stream_version + 1;
 
-  category := category(stream);
+  category := category(_stream_name);
 
   insert into "events"
     (
-      "stream",
+      "stream_name",
       "stream_position",
       "type",
       "category",
@@ -37,12 +37,12 @@ BEGIN
     )
   values
     (
-      stream,
+      _stream_name,
       next_version,
-      type,
+      _type,
       category,
-      data,
-      metadata
+      _data,
+      _metadata
     )
   ;
 

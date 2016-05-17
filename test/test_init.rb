@@ -14,7 +14,10 @@ puts RUBY_DESCRIPTION
 
 require_relative '../init.rb'
 require 'event_stream/postgres/controls'
+controls = EventStream::Postgres::Controls
 
 require 'test_bench'; TestBench.activate
 
 Telemetry::Logger::AdHoc.activate
+
+include EventStream::Postgres
