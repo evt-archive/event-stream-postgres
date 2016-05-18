@@ -1,20 +1,20 @@
 require_relative 'bench_init'
 
 context "Session" do
-  session = EventStream::Postgres::Session.build
-
   test "Connected" do
-    connected_session = EventStream::Postgres::Session.build
+    connected_session = Session.build
     connected = connected_session.connected?
 
     assert(connected)
   end
 
   context "Settings" do
-    settings = EventStream::Postgres::Settings.build
+    session = Session.build
+
+    settings = Postgres::Settings.build
     settings_hash = settings.get.to_h
 
-    names = EventStream::Postgres::Settings.names
+    names = Postgres::Settings.names
 
     names.each do |name|
       test "#{name}" do

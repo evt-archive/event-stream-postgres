@@ -20,4 +20,5 @@ require 'test_bench'; TestBench.activate
 
 Telemetry::Logger::AdHoc.activate
 
+include EventStream
 include EventStream::Postgres
