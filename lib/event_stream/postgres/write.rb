@@ -75,7 +75,7 @@ module EventStream
           stream_position = res[0].values[0]
         end
 
-        logger.opt_debug "Inserted event data (Stream Name: #{stream_name}, Type: #{type}, Expected Version: #{expected_version.inspect})"
+        logger.opt_info "Inserted event data (Stream Name: #{stream_name}, Type: #{type}, Expected Version: #{expected_version.inspect})"
 
         stream_position
       end
