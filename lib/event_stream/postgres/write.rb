@@ -40,16 +40,27 @@ module EventStream
 
       def insert
         logger.opt_trace "Inserting event data (Stream Name: #{stream_name}, Type: #{type}, Expected Version: #{expected_version.inspect})"
+
         logger.opt_data "Data: #{data.inspect}"
         logger.opt_data "Metadata: #{metadata.inspect}"
 
-        conn = session.connection
+        serializable_data = EventData::Hash[data]
+        serialized_data = Serialize::Write.(serializable_data, :json)
+
+        serializable_metadata = EventData::Hash[metadata]
+        serialized_metadata = nil
+        unless metadata.nil?
+          serialized_metadata = Serialize::Write.(serializable_metadata, :json)
+        end
+
+        logger.opt_data "Serialized Data: #{serialized_data.inspect}"
+        logger.opt_data "Serialized Metadata: #{serialized_metadata.inspect}"
 
         args = [
           stream_name,
           type,
-          data,
-          metadata,
+          serialized_data,
+          serialized_metadata,
           expected_version
         ]
 
@@ -57,7 +68,7 @@ module EventStream
           SELECT write_event($1::varchar, $2::varchar, $3::jsonb, $4::jsonb, $5::int);
         SQL
 
-        res = conn.exec_params(sql, args)
+        res = session.connection.exec_params(sql, args)
 
         stream_version = nil
         unless res[0].nil?
