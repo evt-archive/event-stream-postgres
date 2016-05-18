@@ -2,10 +2,12 @@ require_relative '../bench_init'
 
 controls = EventStream::Postgres::Controls
 
-context "Insert Event Data" do
+context "Write Event Data" do
   stream_name = controls::StreamName.example
 
   write_event = controls::EventData::Write.example
+  __logger.focus write_event.inspect
+
 
   stream_version = EventStream::Postgres::Write.(stream_name, write_event)
 
