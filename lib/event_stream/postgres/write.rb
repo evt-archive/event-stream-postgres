@@ -56,7 +56,7 @@ module EventStream
         logger.opt_data "Serialized Data: #{serialized_data.inspect}"
         logger.opt_data "Serialized Metadata: #{serialized_metadata.inspect}"
 
-        args = [
+        sql_args = [
           stream_name,
           type,
           serialized_data,
@@ -68,7 +68,7 @@ module EventStream
           SELECT write_event($1::varchar, $2::varchar, $3::jsonb, $4::jsonb, $5::int);
         SQL
 
-        res = session.connection.exec_params(sql, args)
+        res = session.connection.exec_params(sql, sql_args)
 
         stream_position = nil
         unless res[0].nil?

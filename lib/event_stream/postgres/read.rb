@@ -1,24 +1,30 @@
 module EventStream
   module Postgres
     class Read
+      attr_reader :stream_name
+      attr_reader :stream_position
+
+      def batch_size
+        @batch_size ||= 1
+      end
+
       dependency :session, Session
       dependency :logger, Telemetry::Logger
 
-      initializer(:stream_name, :stream_position)
+      def initialize(stream_name, stream_position, batch_size=nil)
+        @stream_name = stream_name
+        @stream_position = stream_position
+        @batch_size = batch_size
+      end
 
-      def self.build(stream_name, stream_position, session: nil)
-        new(stream_name, stream_position).tap do |instance|
+      def self.build(stream_name, stream_position, batch_size=nil, session: nil)
+        new(stream_name, stream_position, batch_size).tap do |instance|
           instance.configure(session: session)
         end
       end
 
-      def configure(session: nil)
-        Session.configure(self, session: session)
-        Telemetry::Logger.configure(self)
-      end
-
-      def self.call(stream_name, stream_position, session: nil)
-        instance = build(stream_name, stream_position, session: session)
+      def self.call(stream_name, stream_position, batch_size=nil, session: nil)
+        instance = build(stream_name, stream_position, batch_size, session: session)
         instance.()
       end
 
@@ -26,49 +32,65 @@ module EventStream
         select
       end
 
-      def select
+      def configure(session: nil)
+        Session.configure(self, session: session)
+        Telemetry::Logger.configure(self)
       end
 
-      def insert
-        logger.opt_trace "Inserting event data (Stream Name: #{stream_name}, Type: #{type}, Expected Version: #{expected_version.inspect})"
+      def select
+        logger.opt_trace "Selecting event data (Stream Name: #{stream_name}, Stream Position: #{stream_position.inspect})"
 
-        logger.opt_data "Data: #{data.inspect}"
-        logger.opt_data "Metadata: #{metadata.inspect}"
-
-        serializable_data = EventData::Hash[data]
-        serialized_data = Serialize::Write.(serializable_data, :json)
-
-        serializable_metadata = EventData::Hash[metadata]
-        serialized_metadata = nil
-        unless metadata.nil?
-          serialized_metadata = Serialize::Write.(serializable_metadata, :json)
-        end
-
-        logger.opt_data "Serialized Data: #{serialized_data.inspect}"
-        logger.opt_data "Serialized Metadata: #{serialized_metadata.inspect}"
-
-        args = [
+        sql_args = [
           stream_name,
-          type,
-          serialized_data,
-          serialized_metadata,
-          expected_version
+          stream_position,
+          batch_size
         ]
 
         sql = <<-SQL
-          SELECT write_event($1::varchar, $2::varchar, $3::jsonb, $4::jsonb, $5::int);
+          SELECT
+            stream_name::varchar,
+            stream_position::int,
+            type::varchar,
+            category::varchar,
+            global_position::bigint,
+            data::varchar,
+            metadata::varchar,
+            created_time::timestamp
+          FROM
+            events
+          WHERE
+            stream_name = $1
+          OFFSET
+            $2
+          LIMIT
+            $3
+          ;
         SQL
 
-        res = session.connection.exec_params(sql, args)
+        records = session.connection.exec_params(sql, sql_args)
 
-        stream_position = nil
-        unless res[0].nil?
-          stream_position = res[0].values[0]
+        record = records[0].dup
+
+        serialized_data = record['data']
+        data = Serialize::Read.(serialized_data, EventData::Hash, :json)
+        record['data'] = data
+
+        serialized_metadata = record['metadata']
+        metadata = nil
+        unless serialized_metadata.nil?
+          metadata = Serialize::Read.(serialized_metadata, EventData::Hash, :json)
         end
+        record['metadata'] = metadata
 
-        logger.opt_debug "Inserted event data (Stream Name: #{stream_name}, Type: #{type}, Expected Version: #{expected_version.inspect})"
+        localized_created_time = record['created_time']
+        utc_coerced_time = Clock::UTC.coerce(localized_created_time)
+        record['created_time'] = utc_coerced_time
 
-        stream_position
+        read_event = EventData::Read.build record
+
+        logger.opt_debug "Selecting event data (Stream Name: #{stream_name}, Stream Position: #{stream_position.inspect})"
+
+        read_event
       end
     end
   end
