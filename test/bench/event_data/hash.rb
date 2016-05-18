@@ -1,9 +1,11 @@
 require_relative '../bench_init'
 
+controls = EventStream::Postgres::Controls
+
 context "EventData Hash" do
   context "JSON serialize" do
-    example_hash = EventStream::Postgres::Controls::EventData::Hash.example
-    control_serialized_text = EventStream::Postgres::Controls::EventData::Hash::JSON.text
+    example_hash = controls::EventData::Hash.example
+    control_serialized_text = controls::EventData::Hash::JSON.text
 
     serialized_text = Serialize::Write.(example_hash, :json)
 
@@ -11,10 +13,10 @@ context "EventData Hash" do
   end
 
   context "JSON deserialize" do
-    example_serialized_text = EventStream::Postgres::Controls::EventData::Hash::JSON.text
-    control_deserialized_hash = EventStream::Postgres::Controls::EventData::Hash.example
+    example_serialized_text = controls::EventData::Hash::JSON.text
+    control_deserialized_hash = controls::EventData::Hash.example
 
-    deserialized_hash = Serialize::Read.(example_serialized_text, EventStream::Postgres::EventData::Hash, :json)
+    deserialized_hash = Serialize::Read.(example_serialized_text, EventData::Hash, :json)
 
     assert(deserialized_hash == control_deserialized_hash)
   end
