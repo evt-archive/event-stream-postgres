@@ -5,7 +5,7 @@ set -e
 clear
 
 echo
-echo "Clearing Events Table"
+echo "Listing Events"
 echo "= = ="
 echo
 
@@ -27,8 +27,8 @@ echo "Database name is: $database"
 
 echo
 
-function truncate-events-table {
-  psql $database -c "TRUNCATE events RESTART IDENTITY;"
+function select-all-events {
+  psql $database -c "SELECT * FROM events"
 }
 
-truncate-events-table
+select-all-events
