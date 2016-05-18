@@ -60,6 +60,8 @@ module EventStream
             events
           WHERE
             stream_name = $1
+          ORDER BY
+            global_position
           OFFSET
             $2
           LIMIT
