@@ -70,14 +70,14 @@ module EventStream
 
         res = session.connection.exec_params(sql, args)
 
-        stream_version = nil
+        stream_position = nil
         unless res[0].nil?
-          stream_version = res[0].values[0]
+          stream_position = res[0].values[0]
         end
 
         logger.opt_debug "Inserted event data (Stream Name: #{stream_name}, Type: #{type}, Expected Version: #{expected_version.inspect})"
 
-        stream_version
+        stream_position
       end
     end
   end
