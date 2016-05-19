@@ -16,9 +16,7 @@ BEGIN
 
   if _expected_version is not null then
     if _expected_version != stream_version then
-      raise exception 'Wrong expected version: % (Stream: %, Stream Version: %)', _expected_version, _stream_name, stream_version using
-        errcode='XPCTV',
-        hint='The event cannot be written if the stream version and expected verion do not match';
+      raise exception 'Wrong expected version: % (Stream: %, Stream Version: %)', _expected_version, _stream_name, stream_version;
     end if;
   end if;
 

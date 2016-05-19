@@ -1,6 +1,8 @@
 module EventStream
   module Postgres
     class Write
+      class ExpectedVersionError < RuntimeError; end
+
       attr_reader :stream_name
       attr_reader :type
       attr_reader :data
@@ -68,11 +70,20 @@ module EventStream
           SELECT write_event($1::varchar, $2::varchar, $3::jsonb, $4::jsonb, $5::int);
         SQL
 
-        res = session.connection.exec_params(sql, sql_args)
+        begin
+          records = session.connection.exec_params(sql, sql_args)
+        rescue PG::RaiseException => e
+          error_message = e.message
+          if e.message.include? 'Wrong expected version'
+            error_message.gsub!('ERROR:', '').strip!
+            raise ExpectedVersionError, error_message
+          end
+          raise e
+        end
 
         stream_position = nil
-        unless res[0].nil?
-          stream_position = res[0].values[0]
+        unless records[0].nil?
+          stream_position = records[0].values[0]
         end
 
         logger.opt_debug "Inserted event data (Stream Name: #{stream_name}, Type: #{type}, Expected Version: #{expected_version.inspect})"
