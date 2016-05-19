@@ -28,18 +28,27 @@ module EventStream
         instance.()
       end
 
-      def call
-        select
-      end
-
       def configure(session: nil)
         Session.configure(self, session: session)
         Telemetry::Logger.configure(self)
       end
 
-      def select
+      def call
         logger.opt_trace "Selecting event data (Stream Name: #{stream_name}, Stream Position: #{stream_position.inspect})"
 
+        events = select_events
+
+        logger.opt_debug "Selecting event data (Stream Name: #{stream_name}, Stream Position: #{stream_position.inspect})"
+
+        events
+      end
+
+      def select_events
+        records = execute_query
+        events(records)
+      end
+
+      def execute_query
         sql_args = [
           stream_name,
           stream_position,
@@ -69,30 +78,33 @@ module EventStream
           ;
         SQL
 
-        records = session.connection.exec_params(sql, sql_args)
+        session.connection.exec_params(sql, sql_args)
+      end
 
+      def events(records)
         record = records[0].dup
 
-        serialized_data = record['data']
-        data = Serialize::Read.(serialized_data, EventData::Hash, :json)
-        record['data'] = data
+        record['data'] = deserialized_data(record['data'])
+        record['metadata'] = deserialized_metadata(record['metadata'])
+        record['created_time'] = utc_coerced_time(record['created_time'])
 
-        serialized_metadata = record['metadata']
-        metadata = nil
-        unless serialized_metadata.nil?
-          metadata = Serialize::Read.(serialized_metadata, EventData::Hash, :json)
+        EventData::Read.build record
+      end
+
+      def deserialized_data(serialized_data)
+        Serialize::Read.(serialized_data, EventData::Hash, :json)
+      end
+
+      def deserialized_metadata(serialized_metadata)
+        if serialized_metadata.nil?
+          nil
+        else
+          Serialize::Read.(serialized_metadata, EventData::Hash, :json)
         end
-        record['metadata'] = metadata
+      end
 
-        localized_created_time = record['created_time']
-        utc_coerced_time = Clock::UTC.coerce(localized_created_time)
-        record['created_time'] = utc_coerced_time
-
-        read_event = EventData::Read.build record
-
-        logger.opt_debug "Selecting event data (Stream Name: #{stream_name}, Stream Position: #{stream_position.inspect})"
-
-        read_event
+      def utc_coerced_time(local_time)
+        Clock::UTC.coerce(local_time)
       end
     end
   end
