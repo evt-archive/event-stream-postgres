@@ -37,10 +37,6 @@ module EventStream
       end
 
       def call
-        insert
-      end
-
-      def insert
         logger.opt_trace "Inserting event data (Stream Name: #{stream_name}, Type: #{type}, Expected Version: #{expected_version.inspect})"
 
         logger.opt_data "Data: #{data.inspect}"
@@ -58,6 +54,19 @@ module EventStream
         logger.opt_data "Serialized Data: #{serialized_data.inspect}"
         logger.opt_data "Serialized Metadata: #{serialized_metadata.inspect}"
 
+        stream_position = insert_event
+
+        logger.opt_debug "Inserted event data (Stream Name: #{stream_name}, Type: #{type}, Expected Version: #{expected_version.inspect})"
+
+        stream_position
+      end
+
+      def insert_event
+        records = execute_query
+        stream_position(records)
+      end
+
+      def execute_query
         sql_args = [
           stream_name,
           type,
@@ -66,29 +75,48 @@ module EventStream
           expected_version
         ]
 
-        sql = <<-SQL
-          SELECT write_event($1::varchar, $2::varchar, $3::jsonb, $4::jsonb, $5::int);
-        SQL
-
         begin
-          records = session.connection.exec_params(sql, sql_args)
+          records = session.connection.exec_params(statement, sql_args)
         rescue PG::RaiseException => e
-          error_message = e.message
-          if e.message.include? 'Wrong expected version'
-            error_message.gsub!('ERROR:', '').strip!
-            raise ExpectedVersionError, error_message
-          end
-          raise e
+          raise_error e
         end
 
+        records
+      end
+
+      def statement
+        "SELECT write_event($1::varchar, $2::varchar, $3::jsonb, $4::jsonb, $5::int);"
+      end
+
+      def serialized_data
+        serializable_data = EventData::Hash[data]
+        Serialize::Write.(serializable_data, :json)
+      end
+
+      def serialized_metadata
+        serializable_metadata = EventData::Hash[metadata]
+        serialized_metadata = nil
+        unless metadata.nil?
+          serialized_metadata = Serialize::Write.(serializable_metadata, :json)
+        end
+        serialized_metadata
+      end
+
+      def stream_position(records)
         stream_position = nil
         unless records[0].nil?
           stream_position = records[0].values[0]
         end
-
-        logger.opt_debug "Inserted event data (Stream Name: #{stream_name}, Type: #{type}, Expected Version: #{expected_version.inspect})"
-
         stream_position
+      end
+
+      def raise_error(pg_error)
+        error_message = pg_error.message
+        if error_message.include? 'Wrong expected version'
+          error_message.gsub!('ERROR:', '').strip!
+          raise ExpectedVersionError, error_message
+        end
+        raise pg_error
       end
     end
   end
