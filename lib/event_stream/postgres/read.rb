@@ -82,13 +82,13 @@ module EventStream
       end
 
       def events(records)
-        record = records[0].dup
+        records.map do |record|
+          record['data'] = deserialized_data(record['data'])
+          record['metadata'] = deserialized_metadata(record['metadata'])
+          record['created_time'] = utc_coerced_time(record['created_time'])
 
-        record['data'] = deserialized_data(record['data'])
-        record['metadata'] = deserialized_metadata(record['metadata'])
-        record['created_time'] = utc_coerced_time(record['created_time'])
-
-        EventData::Read.build record
+          EventData::Read.build record
+        end
       end
 
       def deserialized_data(serialized_data)
