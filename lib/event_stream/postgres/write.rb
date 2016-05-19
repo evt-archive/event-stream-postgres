@@ -42,16 +42,6 @@ module EventStream
         logger.opt_data "Data: #{data.inspect}"
         logger.opt_data "Metadata: #{metadata.inspect}"
 
-        serializable_data = EventData::Hash[data]
-        serialized_data = Serialize::Write.(serializable_data, :json)
-
-        serializable_metadata = EventData::Hash[metadata]
-        serialized_metadata = nil
-        unless metadata.nil?
-          serialized_metadata = Serialize::Write.(serializable_metadata, :json)
-        end
-
-        logger.opt_data "Serialized Data: #{serialized_data.inspect}"
         logger.opt_data "Serialized Metadata: #{serialized_metadata.inspect}"
 
         stream_position = insert_event
@@ -90,7 +80,9 @@ module EventStream
 
       def serialized_data
         serializable_data = EventData::Hash[data]
-        Serialize::Write.(serializable_data, :json)
+        serialized_data = Serialize::Write.(serializable_data, :json)
+        logger.opt_data "Serialized Data: #{serialized_data.inspect}"
+        serialized_data
       end
 
       def serialized_metadata
@@ -99,6 +91,7 @@ module EventStream
         unless metadata.nil?
           serialized_metadata = Serialize::Write.(serializable_metadata, :json)
         end
+        logger.opt_data "Serialized Metadata: #{serialized_metadata.inspect}"
         serialized_metadata
       end
 
