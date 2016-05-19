@@ -12,10 +12,6 @@ context "Write Event Data" do
 
   context "Result is stream version" do
     test "Stream position" do
-      __logger.focus write_event.inspect
-      __logger.focus written_stream_position.inspect
-      __logger.focus read_event.inspect
-
       assert(read_event.stream_position == written_stream_position)
     end
   end
