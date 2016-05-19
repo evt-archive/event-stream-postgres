@@ -58,14 +58,19 @@ module EventStream
         logger.opt_data "Serialized Data: #{serialized_data.inspect}"
         logger.opt_data "Serialized Metadata: #{serialized_metadata.inspect}"
 
-        sql_args = [
-          stream_name,
-          type,
-          serialized_data,
-          serialized_metadata,
-          expected_version
-        ]
+        records = execute_query(stream_name, type, serialized_data, serialized_metadata, expected_version)
 
+        stream_position = nil
+        unless records[0].nil?
+          stream_position = records[0].values[0]
+        end
+
+        logger.opt_debug "Inserted event data (Stream Name: #{stream_name}, Type: #{type}, Expected Version: #{expected_version.inspect})"
+
+        stream_position
+      end
+
+      def execute_query(*sql_args)
         sql = <<-SQL
           SELECT write_event($1::varchar, $2::varchar, $3::jsonb, $4::jsonb, $5::int);
         SQL
@@ -81,14 +86,7 @@ module EventStream
           raise e
         end
 
-        stream_position = nil
-        unless records[0].nil?
-          stream_position = records[0].values[0]
-        end
-
-        logger.opt_debug "Inserted event data (Stream Name: #{stream_name}, Type: #{type}, Expected Version: #{expected_version.inspect})"
-
-        stream_position
+        records
       end
     end
   end
