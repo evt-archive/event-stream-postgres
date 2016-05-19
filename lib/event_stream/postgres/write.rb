@@ -75,7 +75,7 @@ module EventStream
         rescue PG::RaiseException => e
           error_message = e.message
           if e.message.include? 'Wrong expected version'
-            error_message.gsub('Error:', '').strip
+            error_message.gsub!('ERROR:', '').strip!
             raise ExpectedVersionError, error_message
           end
           raise e
