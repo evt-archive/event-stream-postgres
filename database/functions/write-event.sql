@@ -14,6 +14,10 @@ DECLARE
 BEGIN
   stream_version := stream_version(_stream_name);
 
+  if stream_version IS NULL then
+    stream_version := -1;
+  end if;
+
   if _expected_version is not null then
     if _expected_version != stream_version then
       raise exception 'Wrong expected version: % (Stream: %, Stream Version: %)', _expected_version, _stream_name, stream_version;

@@ -7,9 +7,6 @@ DECLARE
   stream_version int;
 BEGIN
   select max(stream_position) into stream_version from events where stream_name = _stream_name;
-  if stream_version IS NULL then
-    stream_version := -1;
-  end if;
 
   return stream_version;
 END;
