@@ -5,7 +5,7 @@ module EventStream
       attr_reader :stream_position
 
       def batch_size
-        @batch_size ||= 1
+        @batch_size ||= Defaults.batch_size
       end
 
       dependency :session, Session
@@ -108,6 +108,12 @@ module EventStream
       module Time
         def self.utc_coerced(local_time)
           Clock::UTC.coerce(local_time)
+        end
+      end
+
+      module Defaults
+        def self.batch_size
+          100
         end
       end
     end
