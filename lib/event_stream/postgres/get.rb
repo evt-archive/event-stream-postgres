@@ -1,6 +1,6 @@
 module EventStream
   module Postgres
-    class Read
+    class Get
       attr_reader :stream_name
       attr_reader :stream_position
 

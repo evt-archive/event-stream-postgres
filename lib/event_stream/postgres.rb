@@ -20,4 +20,4 @@ require 'event_stream/postgres/settings'
 require 'event_stream/postgres/session'
 
 require 'event_stream/postgres/write'
-require 'event_stream/postgres/read'
+require 'event_stream/postgres/get'
