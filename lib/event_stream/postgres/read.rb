@@ -83,25 +83,29 @@ module EventStream
 
       def convert(records)
         records.map do |record|
-          record['data'] = deserialized_data(record['data'])
-          record['metadata'] = deserialized_metadata(record['metadata'])
+          record['data'] = Deserialize.data(record['data'])
+          record['metadata'] = Deserialize.metadata(record['metadata'])
           record['created_time'] = utc_coerced_time(record['created_time'])
 
           EventData::Read.build record
         end
       end
 
-      def deserialized_data(serialized_data)
-        Serialize::Read.(serialized_data, EventData::Hash, :json)
-      end
+      module Deserialize
+        def self.data(serialized_data)
+          Serialize::Read.(serialized_data, EventData::Hash, :json)
+        end
 
-      def deserialized_metadata(serialized_metadata)
-        if serialized_metadata.nil?
-          nil
-        else
-          Serialize::Read.(serialized_metadata, EventData::Hash, :json)
+        def self.metadata(serialized_metadata)
+          if serialized_metadata.nil?
+            nil
+          else
+            Serialize::Read.(serialized_metadata, EventData::Hash, :json)
+          end
         end
       end
+
+
 
       def utc_coerced_time(local_time)
         Clock::UTC.coerce(local_time)
