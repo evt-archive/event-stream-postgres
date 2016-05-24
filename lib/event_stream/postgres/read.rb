@@ -85,7 +85,7 @@ module EventStream
         records.map do |record|
           record['data'] = Deserialize.data(record['data'])
           record['metadata'] = Deserialize.metadata(record['metadata'])
-          record['created_time'] = utc_coerced_time(record['created_time'])
+          record['created_time'] = Time.utc_coerced(record['created_time'])
 
           EventData::Read.build record
         end
@@ -105,10 +105,10 @@ module EventStream
         end
       end
 
-
-
-      def utc_coerced_time(local_time)
-        Clock::UTC.coerce(local_time)
+      module Time
+        def self.utc_coerced(local_time)
+          Clock::UTC.coerce(local_time)
+        end
       end
     end
   end
