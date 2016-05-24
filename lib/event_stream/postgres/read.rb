@@ -40,15 +40,15 @@ module EventStream
       def get_event_data
         logger.opt_trace "Getting event data (Stream Name: #{stream_name}, Stream Position: #{stream_position.inspect})"
 
-        records = execute_query
-        events = events(records)
+        records = get_records
+        events = convert(records)
 
         logger.opt_debug "Got event data (Stream Name: #{stream_name}, Stream Position: #{stream_position.inspect}, Count: #{events.length})"
 
         events
       end
 
-      def execute_query
+      def get_records
         sql_args = [
           stream_name,
           stream_position,
@@ -81,7 +81,7 @@ module EventStream
         session.connection.exec_params(sql, sql_args)
       end
 
-      def events(records)
+      def convert(records)
         records.map do |record|
           record['data'] = deserialized_data(record['data'])
           record['metadata'] = deserialized_metadata(record['metadata'])
