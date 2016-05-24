@@ -34,18 +34,18 @@ module EventStream
       end
 
       def call
-        logger.opt_trace "Selecting event data (Stream Name: #{stream_name}, Stream Position: #{stream_position.inspect})"
-
-        events = select_events
-
-        logger.opt_debug "Selecting event data (Stream Name: #{stream_name}, Stream Position: #{stream_position.inspect})"
-
-        events
+        get_event_data
       end
 
-      def select_events
+      def get_event_data
+        logger.opt_trace "Getting event data (Stream Name: #{stream_name}, Stream Position: #{stream_position.inspect})"
+
         records = execute_query
-        events(records)
+        events = events(records)
+
+        logger.opt_debug "Got event data (Stream Name: #{stream_name}, Stream Position: #{stream_position.inspect}, Count: #{events.length})"
+
+        events
       end
 
       def execute_query
