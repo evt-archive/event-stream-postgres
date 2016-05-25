@@ -32,8 +32,8 @@ module EventStream
       end
 
       def configure(session: nil)
-        Session.configure(self, session: session)
-        Telemetry::Logger.configure(self)
+        Session.configure self, session: session
+        Telemetry::Logger.configure self
       end
 
       def call
