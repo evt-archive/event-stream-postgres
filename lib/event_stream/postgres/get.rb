@@ -1,6 +1,11 @@
 module EventStream
   module Postgres
     class Get
+      initializer :stream, w(:stream_position), w(:batch_size)
+
+      dependency :session, Session
+      dependency :logger, Telemetry::Logger
+
       def stream_position
         @stream_position ||= Defaults.stream_position
       end
@@ -12,11 +17,6 @@ module EventStream
       def stream_name
         stream.name
       end
-
-      initializer :stream, w(:stream_position), w(:batch_size)
-
-      dependency :session, Session
-      dependency :logger, Telemetry::Logger
 
       def self.build(stream_name: nil, category: nil, stream_position: nil, batch_size: nil, session: nil)
         stream = Stream.build stream_name: stream_name, category: category
