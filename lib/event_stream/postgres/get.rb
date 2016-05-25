@@ -1,31 +1,16 @@
 module EventStream
   module Postgres
     class Get
-      initializer :stream, w(:stream_position), w(:batch_size), w(:precedence)
+      initializer :select_statement
 
       dependency :session, Session
       dependency :logger, Telemetry::Logger
 
-      def stream_position
-        @stream_position ||= Defaults.stream_position
-      end
-
-      def batch_size
-        @batch_size ||= Defaults.batch_size
-      end
-
-      def precedence
-        @precedence ||= 'ASC'
-      end
-
-      def stream_name
-        stream.name
-      end
-
       def self.build(stream_name: nil, category: nil, stream_position: nil, batch_size: nil, precedence: nil, session: nil)
         stream = Stream.build stream_name: stream_name, category: category
+        select_statement = SelectStatement.build(stream, stream_position: stream_position, batch_size: batch_size, precedence: precedence)
 
-        new(stream, stream_position, batch_size, precedence).tap do |instance|
+        new(select_statement).tap do |instance|
           instance.configure(session: session)
         end
       end
@@ -45,36 +30,40 @@ module EventStream
       end
 
       def get_event_data
-        logger.opt_trace "Getting event data (Stream Name: #{stream_name}, Stream Position: #{stream_position.inspect})"
+        logger.opt_trace "Getting event data"
 
         records = get_records
         events = convert(records)
 
-        logger.opt_debug "Got event data (Stream Name: #{stream_name}, Stream Position: #{stream_position.inspect}, Count: #{events.length})"
+        logger.opt_debug "Got event data (Count: #{events.length})"
 
         events
       end
 
       def get_records
-        sql_args = [
-          stream_name,
-          stream_position,
-          batch_size
-        ]
+        logger.opt_trace "Getting records"
 
-        statement = SelectStatement.(stream, stream_position: stream_position, batch_size: batch_size, precedence: precedence)
+        records = session.connection.exec_params(select_statement.sql, select_statement.args)
 
-        session.connection.exec_params(statement, sql_args)
+        logger.opt_debug "Got records (Count: #{records.ntuples})"
+
+        records
       end
 
       def convert(records)
-        records.map do |record|
+        logger.opt_trace "Converting records to events (Records Count: #{records.ntuples})"
+
+        events = records.map do |record|
           record['data'] = Deserialize.data(record['data'])
           record['metadata'] = Deserialize.metadata(record['metadata'])
           record['created_time'] = Time.utc_coerced(record['created_time'])
 
           EventData::Read.build record
         end
+
+        logger.opt_debug "Converting records to events (Events Count: #{events.length})"
+
+        events
       end
 
       module Deserialize
@@ -94,16 +83,6 @@ module EventStream
       module Time
         def self.utc_coerced(local_time)
           Clock::UTC.coerce(local_time)
-        end
-      end
-
-      module Defaults
-        def self.stream_position
-          0
-        end
-
-        def self.batch_size
-          100
         end
       end
     end
