@@ -10,8 +10,8 @@ context "Write Event Data" do
 
   read_event = Get.(stream_name, written_stream_position)[0]
 
-  context "Result is stream version" do
-    test "Stream position" do
+  context "Get" do
+    test "Result is stream version" do
       assert(read_event.stream_position == written_stream_position)
     end
   end
