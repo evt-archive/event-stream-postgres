@@ -1,7 +1,7 @@
 module EventStream
   module Postgres
     class Get
-      initializer :stream, w(:stream_position), w(:batch_size)
+      initializer :stream, w(:stream_position), w(:batch_size), w(:precedence)
 
       dependency :session, Session
       dependency :logger, Telemetry::Logger
@@ -14,19 +14,23 @@ module EventStream
         @batch_size ||= Defaults.batch_size
       end
 
+      def precedence
+        @precedence ||= 'ASC'
+      end
+
       def stream_name
         stream.name
       end
 
-      def self.build(stream_name: nil, category: nil, stream_position: nil, batch_size: nil, session: nil)
+      def self.build(stream_name: nil, category: nil, stream_position: nil, batch_size: nil, precedence: nil, session: nil)
         stream = Stream.build stream_name: stream_name, category: category
 
-        new(stream, stream_position, batch_size).tap do |instance|
+        new(stream, stream_position, batch_size, precedence).tap do |instance|
           instance.configure(session: session)
         end
       end
 
-      def self.call(stream_name: nil, category: nil, stream_position: nil, batch_size: nil, session: nil)
+      def self.call(stream_name: nil, category: nil, stream_position: nil, batch_size: nil, precedence: nil, session: nil)
         instance = build(stream_name: stream_name, category: category, stream_position: stream_position, batch_size: batch_size, session: session)
         instance.()
       end
@@ -58,30 +62,9 @@ module EventStream
           batch_size
         ]
 
-        sql = <<-SQL
-          SELECT
-            stream_name::varchar,
-            stream_position::int,
-            type::varchar,
-            category::varchar,
-            global_position::bigint,
-            data::varchar,
-            metadata::varchar,
-            created_time::timestamp
-          FROM
-            events
-          WHERE
-            stream_name = $1
-          ORDER BY
-            global_position ASC
-          OFFSET
-            $2
-          LIMIT
-            $3
-          ;
-        SQL
+        statement = SelectStatement.(stream, stream_position: stream_position, batch_size: batch_size, precedence: precedence)
 
-        session.connection.exec_params(sql, sql_args)
+        session.connection.exec_params(statement, sql_args)
       end
 
       def convert(records)

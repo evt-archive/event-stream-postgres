@@ -28,7 +28,7 @@ module EventStream
       end
 
       def self.call(stream, stream_position: nil, batch_size: nil, precedence: nil)
-        instance = build(stream, category: category, stream_position: stream_position, batch_size: batch_size, precedence: precedence)
+        instance = build(stream, stream_position: stream_position, batch_size: batch_size, precedence: precedence)
         instance.()
       end
 
@@ -58,15 +58,16 @@ module EventStream
           WHERE
             stream_name = $1
           ORDER BY
-            global_position $2
+            global_position #{precedence}
           OFFSET
-            $3
+            $2
           LIMIT
-            $4
+            $3
           ;
         SQL
 
         logger.opt_debug "Composed select statement (Stream Name: #{stream_name}, Stream Position: #{stream_position}, Batch Size: #{batch_size}, Precedence: #{precedence})"
+        logger.opt_data "Statement: #{statement}"
 
         statement
       end
