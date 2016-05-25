@@ -16,7 +16,7 @@ module EventStream
       end
 
       def self.call(stream_name: nil, category: nil, stream_position: nil, batch_size: nil, precedence: nil, session: nil)
-        instance = build(stream_name: stream_name, category: category, stream_position: stream_position, batch_size: batch_size, session: session)
+        instance = build(stream_name: stream_name, category: category, stream_position: stream_position, batch_size: batch_size, precedence:precedence, session: session)
         instance.()
       end
 
