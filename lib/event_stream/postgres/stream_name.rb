@@ -16,6 +16,10 @@ module EventStream
       def self.get_id(stream_name)
         Identifier::UUID.parse(stream_name)
       end
+
+      def self.category(stream_name)
+        stream_name.split('-').first
+      end
     end
   end
 end
