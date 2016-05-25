@@ -53,7 +53,7 @@ module EventStream
           WHERE
             stream_name = $1
           ORDER BY
-            global_position #{precedence}
+            global_position #{precedence.to_s.upcase}
           OFFSET
             $2
           LIMIT
@@ -85,7 +85,7 @@ module EventStream
         end
 
         def self.precedence
-          'ASC'
+          :asc
         end
       end
     end

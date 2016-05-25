@@ -14,9 +14,7 @@ context "Batch Size" do
 
   number_of_events = events.length
 
-  context "Get" do
-    test "Number of events retrieved is the specified batch size" do
-      assert(number_of_events == 2)
-    end
+  test "Number of events retrieved is the specified batch size" do
+    assert(number_of_events == 2)
   end
 end
