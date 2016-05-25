@@ -20,14 +20,14 @@ module EventStream
         @batch_size = batch_size
       end
 
-      def self.build(stream_name, stream_position=nil, batch_size=nil, session: nil)
+      def self.build(stream_name: nil, stream_position: nil, batch_size: nil, session: nil)
         new(stream_name, stream_position, batch_size).tap do |instance|
           instance.configure(session: session)
         end
       end
 
-      def self.call(stream_name, stream_position=nil, batch_size=nil, session: nil)
-        instance = build(stream_name, stream_position, batch_size, session: session)
+      def self.call(stream_name: nil, stream_position: nil, batch_size: nil, session: nil)
+        instance = build(stream_name: stream_name, stream_position: stream_position, batch_size: batch_size, session: session)
         instance.()
       end
 
