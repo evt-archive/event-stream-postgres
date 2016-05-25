@@ -2,7 +2,10 @@ module EventStream
   module Postgres
     class Get
       attr_reader :stream_name
-      attr_reader :stream_position
+
+      def stream_position
+        @stream_position ||= Defaults.stream_position
+      end
 
       def batch_size
         @batch_size ||= Defaults.batch_size
@@ -11,20 +14,20 @@ module EventStream
       dependency :session, Session
       dependency :logger, Telemetry::Logger
 
-      def initialize(stream_name, stream_position, batch_size=nil)
+      def initialize(stream_name, stream_position=nil, batch_size=nil)
         @stream_name = stream_name
         @stream_position = stream_position
         @batch_size = batch_size
       end
 
-      def self.build(stream_name, stream_position, batch_size=nil, session: nil)
+      def self.build(stream_name: nil, stream_position: nil, batch_size: nil, session: nil)
         new(stream_name, stream_position, batch_size).tap do |instance|
           instance.configure(session: session)
         end
       end
 
-      def self.call(stream_name, stream_position, batch_size=nil, session: nil)
-        instance = build(stream_name, stream_position, batch_size, session: session)
+      def self.call(stream_name: nil, stream_position: nil, batch_size: nil, session: nil)
+        instance = build(stream_name: stream_name, stream_position: stream_position, batch_size: batch_size, session: session)
         instance.()
       end
 
@@ -112,6 +115,10 @@ module EventStream
       end
 
       module Defaults
+        def self.stream_position
+          0
+        end
+
         def self.batch_size
           100
         end

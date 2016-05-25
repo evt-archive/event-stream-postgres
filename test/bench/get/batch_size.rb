@@ -10,7 +10,7 @@ context "Batch Size" do
   Put.(stream_name, write_event)
   Put.(stream_name, write_event)
 
-  events = Get.(stream_name, 0, 2)
+  events = Get.(stream_name: stream_name, batch_size: 2)
 
   number_of_events = events.length
 

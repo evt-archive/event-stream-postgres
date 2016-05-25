@@ -8,7 +8,7 @@ context "Write Event Data" do
   write_event = controls::EventData::Write.example
   written_stream_position = Put.(stream_name, write_event)
 
-  read_event = Get.(stream_name, written_stream_position)[0]
+  read_event = Get.(stream_name: stream_name, stream_position: written_stream_position)[0]
 
   context "Get" do
     test "Result is stream version" do
