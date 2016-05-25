@@ -1,11 +1,11 @@
 module EventStream
   module Postgres
-    class Read
+    class Get
       attr_reader :stream_name
       attr_reader :stream_position
 
       def batch_size
-        @batch_size ||= 1
+        @batch_size ||= Defaults.batch_size
       end
 
       dependency :session, Session
@@ -34,21 +34,21 @@ module EventStream
       end
 
       def call
-        logger.opt_trace "Selecting event data (Stream Name: #{stream_name}, Stream Position: #{stream_position.inspect})"
+        get_event_data
+      end
 
-        events = select_events
+      def get_event_data
+        logger.opt_trace "Getting event data (Stream Name: #{stream_name}, Stream Position: #{stream_position.inspect})"
 
-        logger.opt_debug "Selecting event data (Stream Name: #{stream_name}, Stream Position: #{stream_position.inspect})"
+        records = get_records
+        events = convert(records)
+
+        logger.opt_debug "Got event data (Stream Name: #{stream_name}, Stream Position: #{stream_position.inspect}, Count: #{events.length})"
 
         events
       end
 
-      def select_events
-        records = execute_query
-        events(records)
-      end
-
-      def execute_query
+      def get_records
         sql_args = [
           stream_name,
           stream_position,
@@ -81,30 +81,40 @@ module EventStream
         session.connection.exec_params(sql, sql_args)
       end
 
-      def events(records)
+      def convert(records)
         records.map do |record|
-          record['data'] = deserialized_data(record['data'])
-          record['metadata'] = deserialized_metadata(record['metadata'])
-          record['created_time'] = utc_coerced_time(record['created_time'])
+          record['data'] = Deserialize.data(record['data'])
+          record['metadata'] = Deserialize.metadata(record['metadata'])
+          record['created_time'] = Time.utc_coerced(record['created_time'])
 
           EventData::Read.build record
         end
       end
 
-      def deserialized_data(serialized_data)
-        Serialize::Read.(serialized_data, EventData::Hash, :json)
-      end
+      module Deserialize
+        def self.data(serialized_data)
+          Serialize::Read.(serialized_data, EventData::Hash, :json)
+        end
 
-      def deserialized_metadata(serialized_metadata)
-        if serialized_metadata.nil?
-          nil
-        else
-          Serialize::Read.(serialized_metadata, EventData::Hash, :json)
+        def self.metadata(serialized_metadata)
+          if serialized_metadata.nil?
+            nil
+          else
+            Serialize::Read.(serialized_metadata, EventData::Hash, :json)
+          end
         end
       end
 
-      def utc_coerced_time(local_time)
-        Clock::UTC.coerce(local_time)
+      module Time
+        def self.utc_coerced(local_time)
+          Clock::UTC.coerce(local_time)
+        end
+      end
+
+      module Defaults
+        def self.batch_size
+          100
+        end
       end
     end
   end
