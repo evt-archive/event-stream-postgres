@@ -6,7 +6,7 @@ context "Write Event Data" do
   stream_name = controls::StreamName.example
 
   write_event = controls::EventData::Write.example
-  written_stream_position = Write.(stream_name, write_event)
+  written_stream_position = Put.(stream_name, write_event)
 
   read_event = Get.(stream_name, written_stream_position)[0]
 
