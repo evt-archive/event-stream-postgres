@@ -14,11 +14,15 @@ module EventStream
       end
 
       def precedence
-        @precedence ||= 'ASC'
+        @precedence ||= Defaults.precedence
       end
 
       def stream_name
         stream.name
+      end
+
+      def stream_type
+        stream.type
       end
 
       def self.build(stream, stream_position: nil, batch_size: nil, precedence: nil)
@@ -27,21 +31,12 @@ module EventStream
         end
       end
 
-      def self.call(stream, stream_position: nil, batch_size: nil, precedence: nil)
-        instance = build(stream, stream_position: stream_position, batch_size: batch_size, precedence: precedence)
-        instance.()
-      end
-
       def configure
         Telemetry::Logger.configure self
       end
 
-      def call
-        get
-      end
-
-      def get
-        logger.opt_trace "Composing select statement (Stream Name: #{stream_name}, Stream Position: #{stream_position}, Batch Size: #{batch_size}, Precedence: #{precedence})"
+      def sql
+        logger.opt_trace "Composing select statement (Stream: #{stream_name}, Type: #{stream_type}, Stream Position: #{stream_position}, Batch Size: #{batch_size}, Precedence: #{precedence})"
 
         statement = <<-SQL
           SELECT
@@ -66,10 +61,18 @@ module EventStream
           ;
         SQL
 
-        logger.opt_debug "Composed select statement (Stream Name: #{stream_name}, Stream Position: #{stream_position}, Batch Size: #{batch_size}, Precedence: #{precedence})"
+        logger.opt_debug "Composed select statement (Stream: #{stream_name}, Type: #{stream_type}, Stream Position: #{stream_position}, Batch Size: #{batch_size}, Precedence: #{precedence})"
         logger.opt_data "Statement: #{statement}"
 
         statement
+      end
+
+      def args
+        [
+          stream_name,
+          stream_position,
+          batch_size
+        ]
       end
 
       module Defaults
@@ -78,7 +81,11 @@ module EventStream
         end
 
         def self.batch_size
-          100
+          1000
+        end
+
+        def self.precedence
+          'ASC'
         end
       end
     end
