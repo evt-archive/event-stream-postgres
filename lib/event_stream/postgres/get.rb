@@ -1,8 +1,6 @@
 module EventStream
   module Postgres
     class Get
-      attr_reader :stream_name
-
       def stream_position
         @stream_position ||= Defaults.stream_position
       end
@@ -11,23 +9,25 @@ module EventStream
         @batch_size ||= Defaults.batch_size
       end
 
+      def stream_name
+        stream.name
+      end
+
+      initializer :stream, w(:stream_position), w(:batch_size)
+
       dependency :session, Session
       dependency :logger, Telemetry::Logger
 
-      def initialize(stream_name, stream_position=nil, batch_size=nil)
-        @stream_name = stream_name
-        @stream_position = stream_position
-        @batch_size = batch_size
-      end
+      def self.build(stream_name: nil, category: nil, stream_position: nil, batch_size: nil, session: nil)
+        stream = Stream.build stream_name: stream_name, category: category
 
-      def self.build(stream_name: nil, stream_position: nil, batch_size: nil, session: nil)
-        new(stream_name, stream_position, batch_size).tap do |instance|
+        new(stream, stream_position, batch_size).tap do |instance|
           instance.configure(session: session)
         end
       end
 
-      def self.call(stream_name: nil, stream_position: nil, batch_size: nil, session: nil)
-        instance = build(stream_name: stream_name, stream_position: stream_position, batch_size: batch_size, session: session)
+      def self.call(stream_name: nil, category: nil, stream_position: nil, batch_size: nil, session: nil)
+        instance = build(stream_name: stream_name, category: category, stream_position: stream_position, batch_size: batch_size, session: session)
         instance.()
       end
 
@@ -73,7 +73,7 @@ module EventStream
           WHERE
             stream_name = $1
           ORDER BY
-            global_position
+            global_position ASC
           OFFSET
             $2
           LIMIT
