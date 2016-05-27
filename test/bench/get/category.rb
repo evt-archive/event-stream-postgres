@@ -1,23 +1,22 @@
-# require_relative '../bench_init'
+require_relative '../bench_init'
 
-# controls = EventStream::Postgres::Controls
+controls = EventStream::Postgres::Controls
 
-# context "Get" do
-#   context "Category" do
-#     category = 'some_category'
-#     stream_name = controls::StreamName.example randomize_category: false,
+context "Get" do
+  context "Category" do
+    category = 'some_category'
 
-#     write_event = controls::EventData::Write.example
-#     Put.(stream_name, write_event)
-#     Put.(stream_name, write_event)
-#     Put.(stream_name, write_event)
+    stream_name_1 = controls::StreamName.example randomize_category: false, category: category
+    controls::Put.(stream_name: stream_name_1)
 
-#     events = Get.(category: category_name)
+    stream_name_2 = controls::StreamName.example randomize_category: false, category: category
+    controls::Put.(stream_name: stream_name_2)
 
-#     number_of_events = events.length
+    events = Get.(category: category)
 
-#     test "Number of events retrieved is the specified batch size" do
-#       assert(number_of_events == 2)
-#     end
-#   end
-# end
+    test "Number of events retrieved is the number written to the category" do
+      number_of_events = events.length
+      assert(number_of_events == 2)
+    end
+  end
+end
