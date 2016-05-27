@@ -4,9 +4,7 @@ controls = EventStream::Postgres::Controls
 
 context "Select Statement" do
   context "Defaults" do
-    # TODO Need contrl
-    stream_name = controls::StreamName.example
-    stream = Stream.build stream_name: stream_name
+    stream = controls::Stream.example
 
     get = Get::SelectStatement.build stream
 
