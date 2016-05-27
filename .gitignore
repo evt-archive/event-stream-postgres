@@ -4,6 +4,7 @@
 .ruby-gemset
 .rvmrc
 Gemfile.lock
-gems
 *.log
 *.gem
+gems
+gems_backup
