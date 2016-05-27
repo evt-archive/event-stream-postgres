@@ -2,7 +2,7 @@ module EventStream
   module Postgres
     module Controls
       module StreamName
-        def self.example(category=nil, id=nil, random: nil)
+        def self.example(category: nil, id: nil, random: nil)
           category ||= 'Test'
           id ||= Identifier::UUID.random
           random = true if random.nil?

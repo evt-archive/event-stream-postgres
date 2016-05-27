@@ -2,13 +2,14 @@ module EventStream
   module Postgres
     module Controls
       module Put
-        def self.call(stream_name: nil, event: nil)
+        def self.call(instances: nil, stream_name: nil, event: nil)
+          instances ||= 1
           stream_name ||= StreamName.example
           event ||= EventData::Write.example
 
-          written_stream_position = EventStream::Postgres::Put.(stream_name, event)
+          EventStream::Postgres::Put.(stream_name, event)
 
-          written_stream_position
+          stream_name
         end
       end
     end
