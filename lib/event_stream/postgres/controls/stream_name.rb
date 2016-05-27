@@ -3,13 +3,8 @@ module EventStream
     module Controls
       module StreamName
         def self.example(category: nil, id: nil, randomize_category: nil)
-          category ||= 'Test'
+          category ||= Category.example category: category, randomize_category: randomize_category
           id ||= Identifier::UUID.random
-          randomize_category = true if randomize_category.nil?
-
-          if randomize_category
-            category = "#{category}#{Identifier::UUID.random.gsub('-', '')}"
-          end
 
           "#{category}-#{id}"
         end
