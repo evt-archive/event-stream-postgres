@@ -57,7 +57,7 @@ context "Stream" do
 
   context "Both Stream Name and Category" do
     test "Is an error" do
-      assert proc { Stream.build } do
+      assert proc { Stream.build stream_name: 'some_stream', category: 'some_category' } do
         raises_error? Stream::NameError
       end
     end
