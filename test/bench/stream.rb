@@ -6,7 +6,6 @@ context "Stream" do
   context "Stream Name" do
     category = 'some_stream'
     stream_name = controls::StreamName.example category, random: false
-
     stream = Stream.build stream_name: stream_name
 
     test "Name" do
