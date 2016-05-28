@@ -5,7 +5,7 @@ controls = EventStream::Postgres::Controls
 context "Stream" do
   context "Stream Name" do
     category = 'some_stream'
-    stream_name = controls::StreamName.example category: category, randomize_category: false
+    stream_name = controls::StreamName.example category: category
     stream = Stream.build stream_name: stream_name
 
     test "Name" do
