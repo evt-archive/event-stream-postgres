@@ -27,7 +27,6 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'controls'
 
   s.add_runtime_dependency 'pg'
-  s.add_runtime_dependency 'sequel'
 
   s.add_development_dependency 'test_bench'
 end
