@@ -52,7 +52,7 @@ module EventStream
             FROM
               events
             WHERE
-              stream_name = $1
+              #{where_clause_field} = $1
             ORDER BY
               global_position #{precedence.to_s.upcase}
             OFFSET
@@ -74,6 +74,14 @@ module EventStream
             stream_position,
             batch_size
           ]
+        end
+
+        def where_clause_field
+          if stream.type == :stream
+            'stream_name'
+          else
+            'category'
+          end
         end
 
         module Defaults

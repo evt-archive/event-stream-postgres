@@ -4,18 +4,19 @@ controls = EventStream::Postgres::Controls
 
 context "Get" do
   context "Category" do
-    stream_name = controls::StreamName.example
+    category = controls::Category.example randomize_category: true
 
-    write_event = controls::EventData::Write.example
-    Put.(stream_name, write_event)
-    Put.(stream_name, write_event)
-    Put.(stream_name, write_event)
+    # remove randomize cat
+    stream_name_1 = controls::StreamName.example randomize_category: false, category: category
+    controls::Put.(stream_name: stream_name_1)
 
-    events = Get.(stream_name: stream_name, batch_size: 2)
+    stream_name_2 = controls::StreamName.example randomize_category: false, category: category
+    controls::Put.(stream_name: stream_name_2)
 
-    number_of_events = events.length
+    events = Get.(category: category)
 
-    test "Number of events retrieved is the specified batch size" do
+    test "Number of events retrieved is the number written to the category" do
+      number_of_events = events.length
       assert(number_of_events == 2)
     end
   end

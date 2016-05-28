@@ -2,14 +2,9 @@ module EventStream
   module Postgres
     module Controls
       module StreamName
-        def self.example(category: nil, id: nil, random: nil)
-          category ||= 'Test'
+        def self.example(category: nil, id: nil, randomize_category: nil)
+          category ||= Category.example category: category, randomize_category: randomize_category
           id ||= Identifier::UUID.random
-          random = true if random.nil?
-
-          if random
-            category = "#{category}#{Identifier::UUID.random.gsub('-', '')}"
-          end
 
           "#{category}-#{id}"
         end
