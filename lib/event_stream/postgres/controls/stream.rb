@@ -9,7 +9,7 @@ module EventStream
 
         module Category
           def self.example(category: nil, randomize_category: nil)
-            category ||= Cateogry.example category: category, randomize_category: randomize_category
+            category ||= Controls::Category.example category: category, randomize_category: randomize_category
             ::Stream.build category: category
           end
         end
