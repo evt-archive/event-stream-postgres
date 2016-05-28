@@ -3,10 +3,10 @@
 -- ----------------------------
 DROP TABLE IF EXISTS "public"."events";
 CREATE TABLE "public"."events" (
-  "stream_name" varchar NOT NULL COLLATE "default",
+  "stream_name" varchar(255) NOT NULL COLLATE "default",
   "stream_position" int4 NOT NULL,
-  "type" varchar NOT NULL COLLATE "default",
-  "category" varchar NOT NULL COLLATE "default",
+  "type" varchar(255) NOT NULL COLLATE "default",
+  "category" varchar(255) NOT NULL COLLATE "default",
   "global_position" bigserial NOT NULL ,
   "data" jsonb NOT NULL,
   "metadata" jsonb,
