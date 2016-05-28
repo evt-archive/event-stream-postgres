@@ -4,13 +4,13 @@ controls = EventStream::Postgres::Controls
 
 context "Get" do
   context "Category" do
-    category = controls::Category.example randomize_category: true
+    category = controls::Category.example
 
     # remove randomize cat
-    stream_name_1 = controls::StreamName.example randomize_category: false, category: category
+    stream_name_1 = controls::StreamName.example category: category
     controls::Put.(stream_name: stream_name_1)
 
-    stream_name_2 = controls::StreamName.example randomize_category: false, category: category
+    stream_name_2 = controls::StreamName.example category: category
     controls::Put.(stream_name: stream_name_2)
 
     events = Get.(category: category)
