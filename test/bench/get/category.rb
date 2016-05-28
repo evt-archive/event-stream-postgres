@@ -6,7 +6,6 @@ context "Get" do
   context "Category" do
     category = controls::Category.example
 
-    # remove randomize cat
     stream_name_1 = controls::StreamName.example category: category
     controls::Put.(stream_name: stream_name_1)
 
