@@ -54,7 +54,7 @@ message_classes = [
 
 Read.(stream_name: stream_name) do |event_data|
   handler.(event_data)
-  # handler has enough info about messages that it can
+  # handler has enough info about message classes that it can
   # xvert them
 end
 
@@ -77,4 +77,6 @@ event_data = writer.(event_data)
 
 
 # The writer's class actuator
-Write.(message, message_types)
+Write.(message, message_classes)
+  # why does this take message classes?
+  # it does not de-serialize
