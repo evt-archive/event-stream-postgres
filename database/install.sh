@@ -69,5 +69,5 @@ function create-functions {
 
 create-user
 create-database
-create-tables
 create-functions
+create-tables

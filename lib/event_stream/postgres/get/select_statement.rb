@@ -80,7 +80,7 @@ module EventStream
           if stream.type == :stream
             'stream_name'
           else
-            'category'
+            'category(stream_name)'
           end
         end
 

@@ -6,4 +6,5 @@ AS $$
 BEGIN
   return split_part(_stream_name, '-', 1);
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql
+IMMUTABLE;
