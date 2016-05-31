@@ -44,7 +44,6 @@ module EventStream
               stream_name::varchar,
               stream_position::int,
               type::varchar,
-              category::varchar,
               global_position::bigint,
               data::varchar,
               metadata::varchar,
