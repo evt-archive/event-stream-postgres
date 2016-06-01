@@ -11,8 +11,6 @@ context "Select Statement" do
     sql = select_statement.sql
     sql.gsub!(/\s+/, ' ')
 
-    __logger.focus sql
-
     context "Where Clause" do
       test "Filters on stream name" do
         assert(sql.include? 'WHERE category(stream_name) =')
