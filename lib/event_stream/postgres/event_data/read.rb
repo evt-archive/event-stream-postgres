@@ -6,9 +6,12 @@ module EventStream
 
         attribute :stream_name
         attribute :stream_position
-        attribute :category
         attribute :global_position
         attribute :created_time
+
+        def category
+          StreamName.category(stream_name)
+        end
       end
     end
   end
