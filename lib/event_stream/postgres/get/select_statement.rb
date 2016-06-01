@@ -44,7 +44,6 @@ module EventStream
               stream_name::varchar,
               stream_position::int,
               type::varchar,
-              category::varchar,
               global_position::bigint,
               data::varchar,
               metadata::varchar,
@@ -80,7 +79,7 @@ module EventStream
           if stream.type == :stream
             'stream_name'
           else
-            'category'
+            'category(stream_name)'
           end
         end
 

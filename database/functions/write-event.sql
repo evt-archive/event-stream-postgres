@@ -26,14 +26,11 @@ BEGIN
 
   next_version := stream_version + 1;
 
-  category := category(_stream_name);
-
   insert into "events"
     (
       "stream_name",
       "stream_position",
       "type",
-      "category",
       "data",
       "metadata"
     )
@@ -42,7 +39,6 @@ BEGIN
       _stream_name,
       next_version,
       _type,
-      category,
       _data,
       _metadata
     )
