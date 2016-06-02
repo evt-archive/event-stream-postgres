@@ -26,3 +26,4 @@ require 'event_stream/postgres/get/select_statement'
 require 'event_stream/postgres/get'
 
 require 'event_stream/postgres/write'
+require 'event_stream/postgres/read'
