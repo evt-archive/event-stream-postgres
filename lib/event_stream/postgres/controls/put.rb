@@ -7,7 +7,9 @@ module EventStream
           stream_name ||= StreamName.example
           event ||= EventData::Write.example
 
-          EventStream::Postgres::Put.(stream_name, event)
+          instances.times do
+            EventStream::Postgres::Put.(stream_name, event)
+          end
 
           stream_name
         end

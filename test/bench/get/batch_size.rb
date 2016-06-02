@@ -4,12 +4,7 @@ controls = EventStream::Postgres::Controls
 
 context "Get" do
   context "Batch Size" do
-    stream_name = controls::StreamName.example
-
-    write_event = controls::EventData::Write.example
-    Put.(stream_name, write_event)
-    Put.(stream_name, write_event)
-    Put.(stream_name, write_event)
+    stream_name = controls::Put.(instances: 3)
 
     events = Get.(stream_name: stream_name, batch_size: 2)
 
