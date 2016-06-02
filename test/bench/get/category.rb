@@ -6,11 +6,7 @@ context "Get" do
   context "Category" do
     category = controls::Category.example
 
-    stream_name_1 = controls::StreamName.example category: category
-    controls::Put.(stream_name: stream_name_1)
-
-    stream_name_2 = controls::StreamName.example category: category
-    controls::Put.(stream_name: stream_name_2)
+    controls::Put.(instances: 2, category: category)
 
     events = Get.(category: category)
 
