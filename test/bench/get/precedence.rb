@@ -4,15 +4,10 @@ controls = EventStream::Postgres::Controls
 
 context "Get" do
   context "Precedence" do
-    stream_name = controls::StreamName.example
-
-    write_event = controls::EventData::Write.example
-    Put.(stream_name, write_event)
-    Put.(stream_name, write_event)
-    Put.(stream_name, write_event)
+    stream_name = controls::Put.(instances: 3)
 
     context "Ascending" do
-      events = Get.(stream_name: stream_name)
+      events = Get.(stream_name: stream_name, precedence: :asc)
 
       first_event_postition = events.first.stream_position
 
