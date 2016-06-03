@@ -9,21 +9,20 @@
 module EventStream
   module Postgres
     class Read
-      initializer :stream
+      initializer :stream_name, :category, :stream_position, :batch_size, :precedence, :session
 
       dependency :session, Session
       dependency :logger, Telemetry::Logger
 
       def self.build(stream_name: nil, category: nil, stream_position: nil, batch_size: nil, precedence: nil, session: nil)
-        stream = Stream.build stream_name: stream_name, category: category
-
-        new(stream).tap do |instance|
+        new(stream_name, category, stream_position, batch_size, precedence, session).tap do |instance|
           instance.configure(session: session)
         end
       end
 
+      # can use configure macro here
       def self.call(stream_name: nil, category: nil, stream_position: nil, batch_size: nil, precedence: nil, session: nil)
-        instance = build(stream_name: stream_name, category: category, stream_position: stream_position, batch_size: batch_size, precedence:precedence, session: session)
+        instance = build(stream_name: stream_name, category: category, stream_position: stream_position, batch_size: batch_size, precedence: precedence, session: session)
         instance.()
       end
 
@@ -37,7 +36,8 @@ module EventStream
       end
 
       def get_event_data
-        []
+        Get.(stream_name: stream_name, category: category, stream_position: stream_position, batch_size: batch_size, precedence: precedence, session: session)
+
       end
     end
   end
