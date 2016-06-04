@@ -36,8 +36,11 @@ module EventStream
       end
 
       def get_event_data
-        Get.(stream_name: stream_name, category: category, stream_position: stream_position, batch_size: batch_size, precedence: precedence, session: session)
+        event_data = Get.(stream_name: stream_name, category: category, stream_position: stream_position, batch_size: batch_size, precedence: precedence, session: session)
 
+
+
+        event_data
       end
     end
   end

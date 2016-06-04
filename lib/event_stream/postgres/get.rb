@@ -35,7 +35,9 @@ module EventStream
         records = get_records
         events = convert(records)
 
-        logger.opt_debug "Got event data (Count: #{events.length})"
+        logger.opt_debug "Finished getting event data (Count: #{events.length})"
+
+        events = nil if events.empty?
 
         events
       end
