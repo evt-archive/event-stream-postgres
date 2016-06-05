@@ -6,6 +6,8 @@ module EventStream
       dependency :session, Session
       dependency :logger, Telemetry::Logger
 
+      # Needs to record the damned args as attributes
+      # build select statement when about to use it
       def self.build(stream_name: nil, category: nil, stream_position: nil, batch_size: nil, precedence: nil, session: nil)
         stream = Stream.build stream_name: stream_name, category: category
         select_statement = SelectStatement.build(stream, stream_position: stream_position, batch_size: batch_size, precedence: precedence)
@@ -30,11 +32,13 @@ module EventStream
       end
 
       def get_event_data
+        # logger.opt_trace "Getting event data (Stream Name: #{stream_name}, Category: #{category}, Stream Position: #{stream_position}, Batch Size: #{batch_size}, Precedence #{precedence})"
         logger.opt_trace "Getting event data"
 
         records = get_records
         events = convert(records)
 
+        # logger.opt_debug "Finished getting event data (Count: #{events.length}, Stream Name: #{stream_name}, Category: #{category}, Stream Position: #{stream_position}, Batch Size: #{batch_size}, Precedence #{precedence})"
         logger.opt_debug "Finished getting event data (Count: #{events.length})"
 
         events = nil if events.empty?
