@@ -10,9 +10,7 @@ context "Put Then Get" do
 
   read_event = Get.(stream_name: stream_name, stream_position: written_stream_position)[0]
 
-  context "Get" do
-    test "Result is stream version" do
-      assert(read_event.stream_position == written_stream_position)
-    end
+  test "Got the event that was written" do
+    assert(read_event.stream_position == written_stream_position)
   end
 end
