@@ -1,6 +1,8 @@
 module EventStream
   module Postgres
     class Read
+      class Error < RuntimeError; end
+
       initializer :stream_name, :category, :stream_position, :batch_size, :precedence, :session
 
       dependency :session, Session
@@ -30,6 +32,12 @@ module EventStream
 
       def get_event_data(&action)
         logger.opt_trace "Reading event data"
+
+        if action.nil?
+          error_message = "Reader must be actuated with a block"
+          logger.error error_message
+          raise Error, error_message
+        end
 
         event_data = nil
         next_stream_position = self.stream_position
