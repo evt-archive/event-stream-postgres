@@ -1,18 +1,13 @@
 module EventStream
   module Postgres
     class Get
-      initializer :select_statement
+      initializer :stream_name, :category, :stream_position, :batch_size, :precedence, :session
 
       dependency :session, Session
       dependency :logger, Telemetry::Logger
 
-      # Needs to record the damned args as attributes
-      # build select statement when about to use it
       def self.build(stream_name: nil, category: nil, stream_position: nil, batch_size: nil, precedence: nil, session: nil)
-        stream = Stream.build stream_name: stream_name, category: category
-        select_statement = SelectStatement.build(stream, stream_position: stream_position, batch_size: batch_size, precedence: precedence)
-
-        new(select_statement).tap do |instance|
+        new(stream_name, category, stream_position, batch_size, precedence, session).tap do |instance|
           instance.configure(session: session)
         end
       end
@@ -32,26 +27,28 @@ module EventStream
       end
 
       def get_event_data
-        # logger.opt_trace "Getting event data (Stream Name: #{stream_name}, Category: #{category}, Stream Position: #{stream_position}, Batch Size: #{batch_size}, Precedence #{precedence})"
-        logger.opt_trace "Getting event data"
+        logger.opt_trace "Getting event data (Stream Name: #{stream_name}, Category: #{category}, Stream Position: #{stream_position}, Batch Size: #{batch_size}, Precedence #{precedence})"
 
-        records = get_records
+        stream = Stream.build stream_name: stream_name, category: category
+        records = get_records(stream)
+
         events = convert(records)
 
-        # logger.opt_debug "Finished getting event data (Count: #{events.length}, Stream Name: #{stream_name}, Category: #{category}, Stream Position: #{stream_position}, Batch Size: #{batch_size}, Precedence #{precedence})"
-        logger.opt_debug "Finished getting event data (Count: #{events.length})"
+        logger.opt_debug "Finished getting event data (Count: #{events.length}, Stream Name: #{stream_name}, Category: #{category}, Stream Position: #{stream_position}, Batch Size: #{batch_size}, Precedence #{precedence})"
 
         events = nil if events.empty?
 
         events
       end
 
-      def get_records
-        logger.opt_trace "Getting records"
+      def get_records(stream)
+        logger.opt_trace "Getting records (Stream: #{stream.name}, Stream Position: #{stream_position}, Batch Size: #{batch_size}, Precedence #{precedence})"
+
+        select_statement = SelectStatement.build(stream, stream_position: stream_position, batch_size: batch_size, precedence: precedence)
 
         records = session.connection.exec_params(select_statement.sql, select_statement.args)
 
-        logger.opt_debug "Got records (Count: #{records.ntuples})"
+        logger.opt_debug "Finished getting records (Count: #{records.ntuples}, Stream: #{stream.name}, Stream Position: #{stream_position}, Batch Size: #{batch_size}, Precedence #{precedence})"
 
         records
       end
@@ -67,7 +64,7 @@ module EventStream
           EventData::Read.build record
         end
 
-        logger.opt_debug "Converting records to events (Events Count: #{events.length})"
+        logger.opt_debug "Converted records to events (Events Count: #{events.length})"
 
         events
       end

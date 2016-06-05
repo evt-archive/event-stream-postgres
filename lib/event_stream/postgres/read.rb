@@ -1,11 +1,3 @@
-# one get per batch
-# (it's a new object, so no dependency)
-
-# after each batch, set stream position to last
-# event's steam position
-
-# enumerate batches
-
 module EventStream
   module Postgres
     class Read
