@@ -25,8 +25,7 @@ module EventStream
       def call(&action)
         get_event_data(&action)
 
-        # return AsyncResult.build("Read does not return a value. Actuate it with a block that is called for each event.")
-        nil
+        return AsyncInvocation::Incorrect
       end
 
       def get_event_data(&action)

@@ -1,4 +1,3 @@
-require 'sequel'
 require 'pg'
 
 require 'casing'
@@ -9,6 +8,7 @@ require 'initializer'; Initializer.activate
 require 'serialize'
 require 'settings'; Settings.activate
 require 'telemetry/logger'
+require 'async_invocation'
 
 require 'event_stream/postgres/stream_name'
 require 'event_stream/postgres/stream'

@@ -24,6 +24,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'initializer'
   s.add_runtime_dependency 'serialize'
   s.add_runtime_dependency 'settings'
+  s.add_runtime_dependency 'async_invocation'
   s.add_runtime_dependency 'controls'
 
   s.add_runtime_dependency 'pg'

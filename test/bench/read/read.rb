@@ -2,16 +2,10 @@ require_relative '../bench_init'
 
 controls = EventStream::Postgres::Controls
 
-context "Read" do
-  stream_name = controls::Put.(instances: 2)
+context "Read Synchronously" do
+  res = Read.(stream_name: 'some_stream_name')
 
-  event_data = []
-
-  Read.(stream_name: stream_name, batch_size: 1) do |datum|
-    event_data << datum
-  end
-
-  test "Reads batches of events" do
-    assert(event_data.length == 2)
+  test "Returns a result that fails when invoked" do
+    assert(res == AsyncInvocation::Incorrect)
   end
 end
