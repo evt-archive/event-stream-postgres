@@ -13,9 +13,9 @@ module EventStream
       end
 
       # can use configure macro here
-      def self.call(stream_name: nil, category: nil, stream_position: nil, batch_size: nil, precedence: nil, session: nil)
+      def self.call(stream_name: nil, category: nil, stream_position: nil, batch_size: nil, precedence: nil, session: nil, &action)
         instance = build(stream_name: stream_name, category: category, stream_position: stream_position, batch_size: batch_size, precedence: precedence, session: session)
-        instance.()
+        instance.(&action)
       end
 
       def configure(session: nil)
@@ -23,12 +23,14 @@ module EventStream
         Telemetry::Logger.configure self
       end
 
-      def call
-        get_event_data
+      def call(&action)
+        get_event_data(&action)
+
+        # return async_result after getting from archive
+        nil
       end
 
-      # enumerate block - don't accumulate events
-      def get_event_data
+      def get_event_data(&action)
         logger.opt_trace "Reading event data"
 
         event_data = nil
@@ -37,11 +39,19 @@ module EventStream
         loop do
           event_data, next_stream_position = get_batch(next_stream_position)
           break if event_data.nil?
+
+          self.class.enumerate_event_data(event_data, &action)
         end
 
         logger.opt_trace "Finished reading event data"
+      end
 
-        event_data
+      def self.enumerate_event_data(event_data, &action)
+        return if action.nil?
+
+        event_data.each do |datum|
+          action.(datum)
+        end
       end
 
       def get_batch(stream_position)

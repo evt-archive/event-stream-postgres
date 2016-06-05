@@ -7,11 +7,11 @@ context "Read" do
 
   event_data = []
 
-  Read.(stream_name: stream_name, batch_size: 1)
+  Read.(stream_name: stream_name, batch_size: 1) do |datum|
+    event_data << datum
+  end
 
-  # test "Reads batches of events" do
-  #   assert(event_data.length == 2)
-  # end
-
-  test "Reads batches of events"
+  test "Reads batches of events" do
+    assert(event_data.length == 2)
+  end
 end
