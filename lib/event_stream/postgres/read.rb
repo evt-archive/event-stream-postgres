@@ -12,7 +12,6 @@ module EventStream
         end
       end
 
-      # can use configure macro here
       def self.call(stream_name: nil, category: nil, stream_position: nil, batch_size: nil, precedence: nil, session: nil, &action)
         instance = build(stream_name: stream_name, category: category, stream_position: stream_position, batch_size: batch_size, precedence: precedence, session: session)
         instance.(&action)
@@ -26,7 +25,7 @@ module EventStream
       def call(&action)
         get_event_data(&action)
 
-        # return async_result after getting from archive
+        # return AsyncResult.build("Read does not return a value. Actuate it with a block that is called for each event.")
         nil
       end
 
