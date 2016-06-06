@@ -2,12 +2,12 @@ module EventStream
   module Postgres
     class Get
       class SelectStatement
-        initializer :stream, w(:stream_position), w(:batch_size), w(:precedence)
+        initializer :stream, w(:offset), w(:batch_size), w(:precedence)
 
         dependency :logger, Telemetry::Logger
 
-        def stream_position
-          @stream_position ||= Defaults.stream_position
+        def offset
+          @offset ||= Defaults.offset
         end
 
         def batch_size
@@ -26,8 +26,8 @@ module EventStream
           stream.type
         end
 
-        def self.build(stream, stream_position: nil, batch_size: nil, precedence: nil)
-          new(stream, stream_position, batch_size, precedence).tap do |instance|
+        def self.build(stream, offset: nil, batch_size: nil, precedence: nil)
+          new(stream, offset, batch_size, precedence).tap do |instance|
             instance.configure
           end
         end
@@ -37,7 +37,7 @@ module EventStream
         end
 
         def sql
-          logger.opt_trace "Composing select statement (Stream: #{stream_name}, Type: #{stream_type}, Stream Position: #{stream_position}, Batch Size: #{batch_size}, Precedence: #{precedence})"
+          logger.opt_trace "Composing select statement (Stream: #{stream_name}, Type: #{stream_type}, Stream Position: #{offset}, Batch Size: #{batch_size}, Precedence: #{precedence})"
 
           statement = <<-SQL
             SELECT
@@ -61,7 +61,7 @@ module EventStream
             ;
           SQL
 
-          logger.opt_debug "Composed select statement (Stream: #{stream_name}, Type: #{stream_type}, Stream Position: #{stream_position}, Batch Size: #{batch_size}, Precedence: #{precedence})"
+          logger.opt_debug "Composed select statement (Stream: #{stream_name}, Type: #{stream_type}, Stream Position: #{offset}, Batch Size: #{batch_size}, Precedence: #{precedence})"
           logger.opt_data "Statement: #{statement}"
 
           statement
@@ -70,7 +70,7 @@ module EventStream
         def args
           [
             stream_name,
-            stream_position,
+            offset,
             batch_size
           ]
         end
@@ -84,7 +84,7 @@ module EventStream
         end
 
         module Defaults
-          def self.stream_position
+          def self.offset
             0
           end
 
