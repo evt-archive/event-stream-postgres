@@ -31,7 +31,7 @@ module EventStream
       end
 
       def get_event_data(&action)
-        logger.opt_trace "Reading event data"
+        logger.opt_trace "Reading event data (Stream Name: #{stream_name.inspect}, Category: #{category.inspect}, Stream Position: #{stream_position.inspect}, Batch Size: #{batch_size.inspect}, Precedence: #{precedence.inspect})"
 
         if action.nil?
           error_message = "Reader must be actuated with a block"
@@ -49,7 +49,7 @@ module EventStream
           self.class.enumerate_event_data(event_data, &action)
         end
 
-        logger.opt_trace "Finished reading event data"
+        logger.opt_debug "Finished reading event data (Stream Name: #{stream_name.inspect}, Category: #{category.inspect}, Stream Position: #{stream_position.inspect}, Batch Size: #{batch_size.inspect}, Precedence: #{precedence.inspect})"
       end
 
       def self.enumerate_event_data(event_data, &action)
@@ -61,7 +61,7 @@ module EventStream
       end
 
       def get_batch(stream_position)
-        logger.opt_trace "Getting batch (Stream Position: #{stream_position})"
+        logger.opt_trace "Getting batch (Stream Position: #{stream_position.inspect})"
 
         event_data = Get.(stream_name: stream_name, category: category, stream_position: stream_position, batch_size: batch_size, precedence: precedence, session: session)
 
@@ -69,7 +69,7 @@ module EventStream
           next_stream_position = event_data.last.stream_position + 1
         end
 
-        logger.opt_debug "Finished getting batch (Stream Position: #{stream_position}, Last Stream Position: #{next_stream_position})"
+        logger.opt_debug "Finished getting batch (Stream Position: #{stream_position.inspect}, Last Stream Position: #{next_stream_position.inspect})"
 
         return event_data, next_stream_position
       end
