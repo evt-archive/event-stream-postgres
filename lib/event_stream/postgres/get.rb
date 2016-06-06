@@ -27,14 +27,14 @@ module EventStream
       end
 
       def get_event_data
-        logger.opt_trace "Getting event data (Stream Name: #{stream_name}, Category: #{category}, Stream Position: #{stream_position}, Batch Size: #{batch_size}, Precedence #{precedence})"
+        logger.opt_trace "Getting event data (Stream Name: #{stream_name.inspect}, Category: #{category.inspect}, Stream Position: #{stream_position.inspect}, Batch Size: #{batch_size.inspect}, Precedence: #{precedence.inspect})"
 
         stream = Stream.build stream_name: stream_name, category: category
         records = get_records(stream)
 
         events = convert(records)
 
-        logger.opt_debug "Finished getting event data (Count: #{events.length}, Stream Name: #{stream_name}, Category: #{category}, Stream Position: #{stream_position}, Batch Size: #{batch_size}, Precedence #{precedence})"
+        logger.opt_debug "Finished getting event data (Count: #{events.length}, Stream Name: #{stream_name.inspect}, Category: #{category.inspect}, Stream Position: #{stream_position.inspect}, Batch Size: #{batch_size.inspect}, Precedence: #{precedence.inspect})"
 
         events = nil if events.empty?
 
@@ -42,13 +42,13 @@ module EventStream
       end
 
       def get_records(stream)
-        logger.opt_trace "Getting records (Stream: #{stream.name}, Stream Position: #{stream_position}, Batch Size: #{batch_size}, Precedence #{precedence})"
+        logger.opt_trace "Getting records (Stream: #{stream.name}, Stream Position: #{stream_position.inspect}, Batch Size: #{batch_size.inspect}, Precedence: #{precedence.inspect})"
 
         select_statement = SelectStatement.build(stream, stream_position: stream_position, batch_size: batch_size, precedence: precedence)
 
         records = session.connection.exec_params(select_statement.sql, select_statement.args)
 
-        logger.opt_debug "Finished getting records (Count: #{records.ntuples}, Stream: #{stream.name}, Stream Position: #{stream_position}, Batch Size: #{batch_size}, Precedence #{precedence})"
+        logger.opt_debug "Finished getting records (Count: #{records.ntuples}, Stream: #{stream.name}, Stream Position: #{stream_position.inspect}, Batch Size: #{batch_size.inspect}, Precedence: #{precedence.inspect})"
 
         records
       end
