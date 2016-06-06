@@ -25,12 +25,12 @@ module EventStream
       end
 
       def call(&action)
-        get_event_data(&action)
+        enumerate_event_data(&action)
 
         return AsyncInvocation::Incorrect
       end
 
-      def get_event_data(&action)
+      def enumerate_event_data(&action)
         logger.opt_trace "Reading event data (Stream Name: #{stream_name.inspect}, Category: #{category.inspect}, Stream Position: #{stream_position.inspect}, Batch Size: #{batch_size.inspect}, Precedence: #{precedence.inspect})"
 
         if action.nil?
