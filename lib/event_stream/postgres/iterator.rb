@@ -37,20 +37,22 @@ module EventStream
         logger.opt_trace "Getting next event data (Batch Length: #{batch.nil? ? '<none>' : batch.length}, Batch Position: #{batch_position}, Stream Offset: #{stream_offset})"
 
 ## extract
-        if batch.nil?
-          batch_log_text = "Batch: #{batch.inspect}"
-        else
-          batch_log_text = "Batch Length: #{batch.length}"
-        end
+        # if batch.nil?
+        #   batch_log_text = "Batch: #{batch.inspect}"
+        # else
+        #   batch_log_text = "Batch Length: #{batch.length}"
+        # end
 
-        if batch.nil? || batch_position == batch.length
-          logger.debug "Current batch is depleted (#{batch_log_text}, Batch Position: #{batch_position})"
-          self.batch = get_batch
-          reset(batch)
-        else
-          logger.debug "Current batch not depleted (#{batch_log_text}, Batch Position: #{batch_position})"
-        end
+        # if batch.nil? || batch_position == batch.length
+        #   logger.debug "Current batch is depleted (#{batch_log_text}, Batch Position: #{batch_position})"
+        #   self.batch = get_batch
+        #   reset(batch)
+        # else
+        #   logger.debug "Current batch not depleted (#{batch_log_text}, Batch Position: #{batch_position})"
+        # end
 ## /extract
+
+        resupply(batch)
 
         event_data = batch[batch_position]
 
@@ -62,10 +64,33 @@ module EventStream
         event_data
       end
 
+      def resupply(batch)
+        logger.opt_trace "Resupplying batch"
+
+        if batch.nil?
+          batch_log_text = "Batch: #{batch.inspect}"
+        else
+          batch_log_text = "Batch Length: #{batch.length}"
+        end
+
+        if batch.nil? || batch_position == batch.length
+          logger.debug "Current batch is depleted (#{batch_log_text}, Batch Position: #{batch_position})"
+
+          batch = get_batch
+          reset(batch)
+        else
+          logger.debug "Current batch not depleted (#{batch_log_text}, Batch Position: #{batch_position})"
+        end
+
+        logger.opt_debug "Finished resupplying batch"
+      end
+
       def reset(batch)
         logger.opt_trace "Resetting batch"
+
         self.batch = batch
         self.batch_position = 0
+
         logger.opt_debug "Reset batch"
         logger.opt_data ("Batch: #{batch.inspect}")
         logger.opt_data ("Batch Position: #{batch_position.inspect}")
