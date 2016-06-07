@@ -37,6 +37,7 @@ module EventStream
         logger.trace "Connecting to database"
 
         if connection.nil?
+          logger.debug "No connection. A new one will be built."
           connection = build_connection(instance)
         else
           logger.debug "Reusing existing connection"

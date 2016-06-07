@@ -3,14 +3,9 @@ module EventStream
     class Iterator
       class Error < RuntimeError; end
 
-      # attr_writer :batch
       attr_accessor :batch
       attr_writer :batch_position
       attr_writer :stream_offset
-
-      # def batch
-      #   @batch ||= []
-      # end
 
       def batch_position
         @batch_position ||= 0
@@ -46,23 +41,16 @@ module EventStream
         logger.opt_trace "Getting next event data (Batch Length: #{batch.nil? ? '<none>' : batch.length}, Batch Position: #{batch_position}, Stream Offset: #{stream_offset})"
 
         if batch.nil? || batch_position > batch.length
-          batch = get_batch
+          self.batch = get_batch
           reset(batch)
         end
 
-require 'pp'
-pp batch
-
         event_data = batch[batch_position]
-
-pp event_data
 
         logger.opt_debug "Done getting next event data (Batch Length: #{batch.nil? ? '<none>' : batch.length}, Batch Position: #{batch_position}, Stream Offset: #{stream_offset})"
         logger.opt_data "Event Data: #{event_data.inspect}"
 
-        advance
-
-pp batch
+        advance_positions
 
         event_data
       end
@@ -74,7 +62,7 @@ pp batch
         logger.opt_debug "Reset batch"
       end
 
-      def advance
+      def advance_positions
         self.batch_position += 1
         self.stream_offset += 1
         logger.opt_debug "Advanced positions (Batch Position: #{batch_position}, Stream Offset: #{stream_offset})"
