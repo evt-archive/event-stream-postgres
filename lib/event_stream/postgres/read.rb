@@ -43,38 +43,16 @@ module EventStream
         logger.opt_trace "Reading event data (Stream Name: #{stream_name.inspect}, Category: #{category.inspect}, Stream Position: #{stream_position.inspect}, Batch Size: #{batch_size.inspect}, Precedence: #{precedence.inspect})"
 
         event_data = nil
-        next_stream_position = self.stream_position
 
         loop do
-          event_data, next_stream_position = get_batch(next_stream_position)
+          event_data = iterator.next
+
           break if event_data.nil?
 
-          self.class.enumerate_event_data(event_data, &action)
+          action.(event_data)
         end
 
         logger.opt_debug "Finished reading event data (Stream Name: #{stream_name.inspect}, Category: #{category.inspect}, Stream Position: #{stream_position.inspect}, Batch Size: #{batch_size.inspect}, Precedence: #{precedence.inspect})"
-      end
-
-      def get_batch(stream_position)
-        logger.opt_trace "Getting batch (Stream Position: #{stream_position.inspect})"
-
-        event_data = Get.(stream_name: stream_name, category: category, stream_position: stream_position, batch_size: batch_size, precedence: precedence, session: session)
-
-        unless event_data.nil?
-          next_stream_position = event_data.last.stream_position + 1
-        end
-
-        logger.opt_debug "Finished getting batch (Stream Position: #{stream_position.inspect}, Last Stream Position: #{next_stream_position.inspect})"
-
-        return event_data, next_stream_position
-      end
-
-      def self.enumerate_event_data(event_data, &action)
-        return if action.nil?
-
-        event_data.each do |datum|
-          action.(datum)
-        end
       end
     end
   end
