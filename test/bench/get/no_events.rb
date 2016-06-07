@@ -6,10 +6,10 @@ context "Get" do
   context "No Events" do
     stream_name = controls::StreamName.example
 
-    events = Get.(stream_name: stream_name)
+    batch = Get.(stream_name: stream_name)
 
-    test "Results in nil" do
-      assert(events.nil?)
+    test "Empty array" do
+      assert(batch == [])
     end
   end
 end

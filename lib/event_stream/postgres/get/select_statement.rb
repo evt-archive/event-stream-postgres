@@ -54,9 +54,9 @@ module EventStream
               #{where_clause_field} = $1
             ORDER BY
               global_position #{precedence.to_s.upcase}
-            OFFSET
-              $2
             LIMIT
+              $2
+            OFFSET
               $3
             ;
           SQL
@@ -70,8 +70,8 @@ module EventStream
         def args
           [
             stream_name,
-            offset,
-            batch_size
+            batch_size,
+            offset
           ]
         end
 

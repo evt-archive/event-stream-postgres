@@ -1,20 +1,26 @@
 module EventStream
   module Postgres
     class Get
-      initializer :stream_name, :category, :stream_position, :batch_size, :precedence, :session
+      initializer :stream_name, :category, :batch_size, :precedence
 
       dependency :session, Session
       dependency :logger, Telemetry::Logger
 
       def self.build(stream_name: nil, category: nil, stream_position: nil, batch_size: nil, precedence: nil, session: nil)
-        new(stream_name, category, stream_position, batch_size, precedence, session).tap do |instance|
+        new(stream_name, category, batch_size, precedence).tap do |instance|
           instance.configure(session: session)
         end
       end
 
+      def self.configure(receiver, attr_name: nil, stream_name: nil, category: nil, stream_position: nil, batch_size: nil, precedence: nil, session: nil)
+        attr_name ||= :get
+        instance = build(stream_name: stream_name, category: category, batch_size: batch_size, precedence: precedence, session: session)
+        receiver.public_send "#{attr_name}=", instance
+      end
+
       def self.call(stream_name: nil, category: nil, stream_position: nil, batch_size: nil, precedence: nil, session: nil)
-        instance = build(stream_name: stream_name, category: category, stream_position: stream_position, batch_size: batch_size, precedence: precedence, session: session)
-        instance.()
+        instance = build(stream_name: stream_name, category: category, batch_size: batch_size, precedence: precedence, session: session)
+        instance.(stream_position: stream_position)
       end
 
       def configure(session: nil)
@@ -22,24 +28,20 @@ module EventStream
         Telemetry::Logger.configure self
       end
 
-      def call
-        get_event_data
-      end
-
-      def get_event_data
-        logger.opt_trace "Getting event data (Stream Name: #{stream_name.inspect}, Category: #{category.inspect}, Stream Position: #{stream_position.inspect}, Batch Size: #{batch_size.inspect}, Precedence: #{precedence.inspect})"
+      def call(stream_position: nil)
+        logger.opt_trace "Getting event data (Stream Position: #{stream_position.inspect}, Stream Name: #{stream_name.inspect}, Category: #{category.inspect}, Batch Size: #{batch_size.inspect}, Precedence: #{precedence.inspect})"
 
         stream = Stream.build stream_name: stream_name, category: category
-        records = get_records(stream)
+        records = get_records(stream, stream_position)
 
         events = convert(records)
 
-        logger.opt_debug "Finished getting event data (Count: #{events.length}, Stream Name: #{stream_name.inspect}, Category: #{category.inspect}, Stream Position: #{stream_position.inspect}, Batch Size: #{batch_size.inspect}, Precedence: #{precedence.inspect})"
+        logger.opt_debug "Finished getting event data (Count: #{events.length}, Stream Position: #{stream_position.inspect}, Stream: #{stream.name}, Batch Size: #{batch_size.inspect}, Precedence: #{precedence.inspect})"
 
         events
       end
 
-      def get_records(stream)
+      def get_records(stream, stream_position)
         logger.opt_trace "Getting records (Stream: #{stream.name}, Stream Position: #{stream_position.inspect}, Batch Size: #{batch_size.inspect}, Precedence: #{precedence.inspect})"
 
         select_statement = SelectStatement.build(stream, offset: stream_position, batch_size: batch_size, precedence: precedence)

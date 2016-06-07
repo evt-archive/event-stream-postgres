@@ -8,10 +8,10 @@ context "Select Statement" do
 
     select_statement = Get::SelectStatement.build stream
 
-    context "Stream Position" do
-      default_stream_position = Get::SelectStatement::Defaults.stream_position
-      test "#{default_stream_position}" do
-        assert(select_statement.stream_position == default_stream_position)
+    context "Offset" do
+      default_offset = Get::SelectStatement::Defaults.offset
+      test "#{default_offset}" do
+        assert(select_statement.offset == default_offset)
       end
     end
 
