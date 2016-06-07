@@ -46,7 +46,7 @@ module EventStream
 
         select_statement = SelectStatement.build(stream, offset: stream_position, batch_size: batch_size, precedence: precedence)
 
-        records = session.connection.exec_params(select_statement.sql, select_statement.args)
+        records = session.connection.exec(select_statement.sql)
 
         logger.opt_debug "Finished getting records (Count: #{records.ntuples}, Stream: #{stream.name}, Stream Position: #{stream_position.inspect}, Batch Size: #{batch_size.inspect}, Precedence: #{precedence.inspect})"
 
