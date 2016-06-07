@@ -36,15 +36,13 @@ module EventStream
 
         logger.opt_debug "Finished getting event data (Count: #{events.length}, Stream Name: #{stream_name.inspect}, Category: #{category.inspect}, Stream Position: #{stream_position.inspect}, Batch Size: #{batch_size.inspect}, Precedence: #{precedence.inspect})"
 
-        events = nil if events.empty?
-
         events
       end
 
       def get_records(stream)
         logger.opt_trace "Getting records (Stream: #{stream.name}, Stream Position: #{stream_position.inspect}, Batch Size: #{batch_size.inspect}, Precedence: #{precedence.inspect})"
 
-        select_statement = SelectStatement.build(stream, stream_position: stream_position, batch_size: batch_size, precedence: precedence)
+        select_statement = SelectStatement.build(stream, offset: stream_position, batch_size: batch_size, precedence: precedence)
 
         records = session.connection.exec_params(select_statement.sql, select_statement.args)
 

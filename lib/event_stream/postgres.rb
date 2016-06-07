@@ -27,3 +27,5 @@ require 'event_stream/postgres/get'
 
 require 'event_stream/postgres/write'
 require 'event_stream/postgres/read'
+
+require 'event_stream/postgres/iterator'
