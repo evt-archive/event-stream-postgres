@@ -43,7 +43,7 @@ module EventStream
           batch_log_text = "Batch Length: #{batch.length}"
         end
 
-        if batch.nil? || batch_position > batch.length
+        if batch.nil? || batch_position == batch.length
           logger.debug "Current batch is depleted (#{batch_log_text}, Batch Position: #{batch_position})"
           self.batch = get_batch
           reset(batch)

@@ -8,9 +8,6 @@ context "Iterator" do
 
     iterator = Iterator.build(stream_name: stream_name, batch_size: 1)
 
-    # event_data_1 = iterator.next
-    # event_data_2 = iterator.next
-
     batch = []
 
     2.times do
@@ -18,25 +15,22 @@ context "Iterator" do
       batch << event_data unless event_data.nil?
     end
 
-    require 'pp'
-    pp batch
-
     test "Gets each event" do
       assert(batch.length == 2)
     end
   end
 
-  # context "No further event data" do
-  #   stream_name = controls::Put.(instances: 2)
+  context "No further event data" do
+    stream_name = controls::Put.(instances: 2)
 
-  #   iterator = Iterator.build(stream_name: stream_name)
+    iterator = Iterator.build(stream_name: stream_name)
 
-  #   2.times { iterator.next }
+    2.times { iterator.next }
 
-  #   last = iterator.next
+    last = iterator.next
 
-  #   test "Results in nil" do
-  #     assert(last.nil?)
-  #   end
-  # end
+    test "Results in nil" do
+      assert(last.nil?)
+    end
+  end
 end
