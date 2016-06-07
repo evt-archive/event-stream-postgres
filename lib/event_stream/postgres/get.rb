@@ -54,7 +54,7 @@ module EventStream
       end
 
       def convert(records)
-        logger.opt_trace "Converting records to events (Records Count: #{records.ntuples})"
+        logger.opt_trace "Converting records to event data (Records Count: #{records.ntuples})"
 
         events = records.map do |record|
           record['data'] = Deserialize.data(record['data'])
@@ -64,7 +64,7 @@ module EventStream
           EventData::Read.build record
         end
 
-        logger.opt_debug "Converted records to events (Events Count: #{events.length})"
+        logger.opt_debug "Converted records to event data (Event Data Count: #{events.length})"
 
         events
       end

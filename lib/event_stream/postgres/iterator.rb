@@ -36,14 +36,25 @@ module EventStream
       def next
         logger.opt_trace "Getting next event data (Batch Length: #{batch.nil? ? '<none>' : batch.length}, Batch Position: #{batch_position}, Stream Offset: #{stream_offset})"
 
+## extract
+        if batch.nil?
+          batch_log_text = "Batch: #{batch.inspect}"
+        else
+          batch_log_text = "Batch Length: #{batch.length}"
+        end
+
         if batch.nil? || batch_position > batch.length
+          logger.debug "Current batch is depleted (#{batch_log_text}, Batch Position: #{batch_position})"
           self.batch = get_batch
           reset(batch)
+        else
+          logger.debug "Current batch not depleted (#{batch_log_text}, Batch Position: #{batch_position})"
         end
+## /extract
 
         event_data = batch[batch_position]
 
-        logger.opt_debug "Done getting next event data (Batch Length: #{batch.nil? ? '<none>' : batch.length}, Batch Position: #{batch_position}, Stream Offset: #{stream_offset})"
+        logger.opt_debug "Finished getting next event data (Batch Length: #{batch.nil? ? '<none>' : batch.length}, Batch Position: #{batch_position}, Stream Offset: #{stream_offset})"
         logger.opt_data "Event Data: #{event_data.inspect}"
 
         advance_positions
@@ -56,23 +67,25 @@ module EventStream
         self.batch = batch
         self.batch_position = 0
         logger.opt_debug "Reset batch"
-      end
-
-      def advance_positions
-        self.batch_position += 1
-        self.stream_offset += 1
-        logger.opt_debug "Advanced positions (Batch Position: #{batch_position}, Stream Offset: #{stream_offset})"
+        logger.opt_data ("Batch: #{batch.inspect}")
+        logger.opt_data ("Batch Position: #{batch_position.inspect}")
       end
 
       def get_batch
         logger.opt_trace "Getting batch"
 
-        # batch = Get.(stream_name: stream_name, category: category, stream_position: stream_offset, batch_size: batch_size, precedence: precedence, session: session)
         batch = get.(stream_position: stream_offset)
 
         logger.opt_debug "Finished getting batch (Count: #{batch.length})"
 
         batch
+      end
+
+      def advance_positions
+        logger.opt_trace "Advancing positions (Batch Position: #{batch_position}, Stream Offset: #{stream_offset})"
+        self.batch_position += 1
+        self.stream_offset += 1
+        logger.opt_debug "Advanced positions (Batch Position: #{batch_position}, Stream Offset: #{stream_offset})"
       end
     end
   end
