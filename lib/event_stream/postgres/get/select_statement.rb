@@ -51,13 +51,13 @@ module EventStream
             FROM
               events
             WHERE
-              #{where_clause_field} = $1
+              #{where_clause_field} = '#{stream_name}'
             ORDER BY
               global_position #{precedence.to_s.upcase}
             LIMIT
-              $2
+              #{batch_size}
             OFFSET
-              $3
+              #{offset}
             ;
           SQL
 
@@ -65,14 +65,6 @@ module EventStream
           logger.opt_data "Statement: #{statement}"
 
           statement
-        end
-
-        def args
-          [
-            stream_name,
-            batch_size,
-            offset
-          ]
         end
 
         def where_clause_field
