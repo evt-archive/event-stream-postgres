@@ -1,8 +1,8 @@
-require_relative 'bench_init'
+require_relative '../bench_init'
 
 controls = EventStream::Postgres::Controls
 
-context "Put Then Get" do
+context "Put and Get" do
   stream_name = controls::StreamName.example
   write_event = controls::EventData::Write.example
 
