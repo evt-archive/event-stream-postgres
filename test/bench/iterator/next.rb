@@ -6,7 +6,7 @@ context "Iterator" do
   context "Next" do
     stream_name = controls::Put.(instances: 2)
 
-    iterator = Iterator.build(stream_name: stream_name)
+    iterator = Iterator.build(stream_name: stream_name, batch_size: 1)
 
     event_data_1 = iterator.next
     event_data_2 = iterator.next
