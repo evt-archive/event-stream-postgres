@@ -21,11 +21,11 @@ require 'event_stream/postgres/settings'
 require 'event_stream/postgres/session'
 
 require 'event_stream/postgres/put'
+require 'event_stream/postgres/write'
 
 require 'event_stream/postgres/get/select_statement'
 require 'event_stream/postgres/get'
-
-require 'event_stream/postgres/write'
+require 'event_stream/postgres/iterator'
 require 'event_stream/postgres/read'
 
-require 'event_stream/postgres/iterator'
+

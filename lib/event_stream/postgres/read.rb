@@ -6,11 +6,13 @@ module EventStream
       initializer :stream_name, :category, :stream_position, :batch_size, :precedence
 
       dependency :session, Session
+      dependency :iterator, Iterator
       dependency :logger, Telemetry::Logger
 
       def self.build(stream_name: nil, category: nil, stream_position: nil, batch_size: nil, precedence: nil, session: nil)
         new(stream_name, category, stream_position, batch_size, precedence).tap do |instance|
-          instance.configure(session: session)
+          Iterator.configure instance, stream_name: stream_name, category: category, stream_position: stream_position, batch_size: batch_size, precedence: precedence, session: session
+          Telemetry::Logger.configure instance
         end
       end
 
@@ -25,12 +27,13 @@ module EventStream
         receiver.public_send "#{attr_name}=", instance
       end
 
-      def configure(session: nil)
-        Session.configure self, session: session
-        Telemetry::Logger.configure self
-      end
-
       def call(&action)
+        if action.nil?
+          error_message = "Reader must be actuated with a block"
+          logger.error error_message
+          raise Error, error_message
+        end
+
         enumerate_event_data(&action)
 
         return AsyncInvocation::Incorrect
@@ -38,12 +41,6 @@ module EventStream
 
       def enumerate_event_data(&action)
         logger.opt_trace "Reading event data (Stream Name: #{stream_name.inspect}, Category: #{category.inspect}, Stream Position: #{stream_position.inspect}, Batch Size: #{batch_size.inspect}, Precedence: #{precedence.inspect})"
-
-        if action.nil?
-          error_message = "Reader must be actuated with a block"
-          logger.error error_message
-          raise Error, error_message
-        end
 
         event_data = nil
         next_stream_position = self.stream_position
