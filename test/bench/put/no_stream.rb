@@ -4,13 +4,19 @@ controls = EventStream::Postgres::Controls
 
 context "Put" do
   context "No Stream" do
-    stream_name = controls::StreamName.example
-    event = controls::EventData::Write.example
+    context "For a stream that already exists" do
+      stream_name = controls::StreamName.example
+      write_event = controls::EventData::Write.example
 
-    put = Put.build(stream_name, event, expected_version: NoStream.name)
+      Put.(stream_name, write_event)
 
-    test "Sets the expected version to -1" do
-      assert(put.expected_version == NoStream.version)
+      erroneous = proc { Put.(stream_name, write_event, expected_version: NoStream.name ) }
+
+      test "Is an error" do
+        assert erroneous do
+          raises_error? Write::ExpectedVersionError
+        end
+      end
     end
   end
 end
