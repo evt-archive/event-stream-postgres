@@ -10,6 +10,8 @@ require 'settings'; Settings.activate
 require 'telemetry/logger'
 require 'async_invocation'
 
+require 'event_stream/postgres/no_stream'
+
 require 'event_stream/postgres/stream_name'
 require 'event_stream/postgres/stream'
 require 'event_stream/postgres/event_data'

@@ -14,7 +14,7 @@ DECLARE
 BEGIN
   stream_version := stream_version(_stream_name);
 
-  if stream_version IS NULL then
+  if stream_version is null then
     stream_version := -1;
   end if;
 
