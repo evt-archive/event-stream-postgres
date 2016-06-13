@@ -5,7 +5,7 @@ module EventStream
       attr_reader :type
       attr_reader :data
       attr_reader :metadata
-      attr_reader :expected_version
+      attr_accessor :expected_version
 
       dependency :session, Session
       dependency :logger, Telemetry::Logger
@@ -20,6 +20,7 @@ module EventStream
 
       def self.build(stream_name, write_event, expected_version: nil, session: nil)
         new(stream_name, write_event.type, write_event.data, write_event.metadata, expected_version: expected_version).tap do |instance|
+          instance.canonize_expected_version
           instance.configure(session: session)
         end
       end
@@ -39,7 +40,6 @@ module EventStream
 
         logger.opt_data "Data: #{data.inspect}"
         logger.opt_data "Metadata: #{metadata.inspect}"
-
         logger.opt_data "Serialized Metadata: #{serialized_metadata.inspect}"
 
         stream_position = insert_event
@@ -47,6 +47,14 @@ module EventStream
         logger.opt_debug "Inserted event data (Stream Name: #{stream_name}, Type: #{type}, Expected Version: #{expected_version.inspect})"
 
         stream_position
+      end
+
+      def canonize_expected_version
+        return unless expected_version == NoStream.name
+
+        logger.opt_trace "Canonizing expected version (Expected Version: #{expected_version})"
+        self.expected_version = NoStream.version
+        logger.opt_debug "Canonized expected version (Expected Version: #{expected_version})"
       end
 
       def insert_event
