@@ -2,25 +2,16 @@ module EventStream
   module Postgres
     class Put
       attr_reader :stream_name
-      attr_reader :type
-      attr_reader :data
-      attr_reader :metadata
-      attr_accessor :expected_version
 
       dependency :session, Session
       dependency :logger, Telemetry::Logger
 
-      def initialize(stream_name, type, data, metadata=nil, expected_version: nil)
+      def initialize(stream_name)
         @stream_name = stream_name
-        @type = type
-        @data = data
-        @metadata = metadata
-        @expected_version = expected_version
       end
 
-      def self.build(stream_name, write_event, expected_version: nil, session: nil)
-        new(stream_name, write_event.type, write_event.data, write_event.metadata, expected_version: expected_version).tap do |instance|
-          instance.canonize_expected_version
+      def self.build(stream_name, session: nil)
+        new(stream_name).tap do |instance|
           instance.configure(session: session)
         end
       end
@@ -31,38 +22,53 @@ module EventStream
       end
 
       def self.call(stream_name, write_event, expected_version: nil, session: nil)
-        instance = build(stream_name, write_event, expected_version: expected_version, session: session)
-        instance.()
+        instance = build(stream_name, session: session)
+        instance.(write_event, expected_version: expected_version)
       end
 
-      def call
-        logger.opt_trace "Inserting event data (Stream Name: #{stream_name}, Type: #{type}, Expected Version: #{expected_version.inspect})"
+      def call(write_event, expected_version: nil)
+        logger.opt_trace "Putting event data (Stream Name: #{stream_name}, Type: #{write_event.type}, Expected Version: #{expected_version.inspect})"
 
-        logger.opt_data "Data: #{data.inspect}"
-        logger.opt_data "Metadata: #{metadata.inspect}"
-        logger.opt_data "Serialized Metadata: #{serialized_metadata.inspect}"
+        type, data, metadata = destructure_event(write_event)
+        expected_version = canonize_expected_version(expected_version)
 
-        stream_position = insert_event
+        stream_position = insert_event(type, data, metadata, expected_version)
 
-        logger.opt_debug "Inserted event data (Stream Name: #{stream_name}, Type: #{type}, Expected Version: #{expected_version.inspect})"
+        logger.opt_debug "Put event data (Stream Name: #{stream_name}, Type: #{write_event.type}, Expected Version: #{expected_version.inspect})"
 
         stream_position
       end
 
-      def canonize_expected_version
-        return unless expected_version == NoStream.name
+      def destructure_event(write_event)
+        type = write_event.type
+        data = write_event.data
+        metadata = write_event.metadata
 
-        logger.opt_trace "Canonizing expected version (Expected Version: #{expected_version})"
-        self.expected_version = NoStream.version
-        logger.opt_debug "Canonized expected version (Expected Version: #{expected_version})"
+        logger.opt_data "Data: #{data.inspect}"
+        logger.opt_data "Metadata: #{metadata.inspect}"
+
+        return type, data, metadata
       end
 
-      def insert_event
-        records = execute_query
+      def canonize_expected_version(expected_version)
+        return expected_version unless expected_version == NoStream.name
+
+        logger.opt_trace "Canonizing expected version (Expected Version: #{expected_version})"
+        expected_version = NoStream.version
+        logger.opt_debug "Canonized expected version (Expected Version: #{expected_version})"
+        expected_version
+      end
+
+      def insert_event(type, data, metadata, expected_version)
+        serialized_data = serialized_data(data)
+        serialized_metadata = serialized_metadata(metadata)
+        records = execute_query(type, serialized_data, serialized_metadata, expected_version)
         stream_position(records)
       end
 
-      def execute_query
+      def execute_query(type, serialized_data, serialized_metadata, expected_version)
+        logger.opt_trace "Executing insert (Stream Name: #{stream_name}, Type: #{type}, Expected Version: #{expected_version.inspect})"
+
         sql_args = [
           stream_name,
           type,
@@ -77,6 +83,8 @@ module EventStream
           raise_error e
         end
 
+        logger.opt_debug "Executed insert (Stream Name: #{stream_name}, Type: #{type}, Expected Version: #{expected_version.inspect})"
+
         records
       end
 
@@ -84,14 +92,14 @@ module EventStream
         "SELECT write_event($1::varchar, $2::varchar, $3::jsonb, $4::jsonb, $5::int);"
       end
 
-      def serialized_data
+      def serialized_data(data)
         serializable_data = EventData::Hash[data]
         serialized_data = Serialize::Write.(serializable_data, :json)
         logger.opt_data "Serialized Data: #{serialized_data.inspect}"
         serialized_data
       end
 
-      def serialized_metadata
+      def serialized_metadata(metadata)
         serializable_metadata = EventData::Hash[metadata]
         serialized_metadata = nil
         unless metadata.nil?
