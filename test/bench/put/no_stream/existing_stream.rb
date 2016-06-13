@@ -6,12 +6,18 @@ context "Put" do
   context "No Stream" do
     context "Existing Stream" do
       stream_name = controls::StreamName.example
-      event = controls::EventData::Write.example
 
-      put = Put.build(stream_name, event, expected_version: NoStream.name)
+      write_event_1 = controls::EventData::Write.example(data: {:some_attribute => 'first'})
+      write_event_2 = controls::EventData::Write.example(data: {:some_attribute => 'second'})
 
-      test "Sets the expected version to -1" do
-        assert(put.expected_version == NoStream.version)
+      Put.(stream_name, write_event_1)
+
+      erroneous = proc { Put.(stream_name, write_event_2, expected_version: NoStream.name) }
+
+      test "Is an error" do
+        assert erroneous do
+          raises_error? Write::ExpectedVersionError
+        end
       end
     end
   end
