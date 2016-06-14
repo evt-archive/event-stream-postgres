@@ -7,9 +7,9 @@ context "Expected Version" do
     stream_name = controls::StreamName.example
     write_event = controls::EventData::Write.example
 
-    stream_version = Put.(stream_name, write_event)
+    stream_position = Put.(stream_name, write_event)
 
-    incorrect_stream_version = stream_version + 1
+    incorrect_stream_version = stream_position  + 1
 
     test "Is an error" do
       assert proc { Put.(stream_name, write_event, expected_version: incorrect_stream_version ) } do
