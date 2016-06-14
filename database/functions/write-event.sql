@@ -9,7 +9,7 @@ RETURNS int
 AS $$
 DECLARE
   stream_version int;
-  next_version int;
+  stream_position int;
   category varchar;
 BEGIN
   stream_version := stream_version(_stream_name);
@@ -24,7 +24,7 @@ BEGIN
     end if;
   end if;
 
-  next_version := stream_version + 1;
+  stream_position := stream_version + 1;
 
   insert into "events"
     (
@@ -37,13 +37,13 @@ BEGIN
   values
     (
       _stream_name,
-      next_version,
+      stream_position,
       _type,
       _data,
       _metadata
     )
   ;
 
-  return next_version;
+  return stream_position;
 END;
 $$ LANGUAGE plpgsql;
