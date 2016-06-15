@@ -80,29 +80,20 @@ module EventStream
         logger.opt_data ("Batch Position: #{batch_position.inspect}")
       end
 
+      def wait_condition
+        @wait_condition ||= lambda { |result| result.empty? }
+      end
+
       def get_batch
         logger.opt_trace "Getting batch"
 
-
-        batch = Loop.() do
+        batch = Loop.(wait_condition) do
           get.(stream_position: stream_offset)
         end
-
 
         logger.opt_debug "Finished getting batch (Count: #{batch.length})"
 
         batch
-      end
-
-      class Loop
-        def self.call(&blk)
-          result = nil
-          loop do
-            result = blk.call
-            break
-          end
-          result
-        end
       end
 
       def advance_positions
