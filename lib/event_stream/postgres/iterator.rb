@@ -83,7 +83,16 @@ module EventStream
       def get_batch
         logger.opt_trace "Getting batch"
 
-        batch = get.(stream_position: stream_offset)
+
+
+        batch = nil
+        loop do
+          batch = get.(stream_position: stream_offset)
+          break
+        end
+
+
+
 
         logger.opt_debug "Finished getting batch (Count: #{batch.length})"
 
