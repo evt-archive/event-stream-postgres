@@ -19,6 +19,7 @@ controls = EventStream::Postgres::Controls
 require 'test_bench'; TestBench.activate
 
 Telemetry::Logger::AdHoc.activate
+require 'pp'
 
 include EventStream
 include EventStream::Postgres
