@@ -36,22 +36,6 @@ module EventStream
       def next
         logger.opt_trace "Getting next event data (Batch Length: #{batch.nil? ? '<none>' : batch.length}, Batch Position: #{batch_position}, Stream Offset: #{stream_offset})"
 
-## extract
-        # if batch.nil?
-        #   batch_log_text = "Batch: #{batch.inspect}"
-        # else
-        #   batch_log_text = "Batch Length: #{batch.length}"
-        # end
-
-        # if batch.nil? || batch_position == batch.length
-        #   logger.debug "Current batch is depleted (#{batch_log_text}, Batch Position: #{batch_position})"
-        #   self.batch = get_batch
-        #   reset(batch)
-        # else
-        #   logger.debug "Current batch not depleted (#{batch_log_text}, Batch Position: #{batch_position})"
-        # end
-## /extract
-
         resupply(batch)
 
         event_data = batch[batch_position]
