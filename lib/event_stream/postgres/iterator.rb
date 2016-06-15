@@ -84,12 +84,6 @@ module EventStream
         logger.opt_trace "Getting batch"
 
 
-        # batch = nil
-        # loop do
-        #   batch = get.(stream_position: stream_offset)
-        #   break
-        # end
-
         batch = nil
         Loop.() do
           batch = get.(stream_position: stream_offset)
@@ -103,10 +97,12 @@ module EventStream
 
       class Loop
         def self.call(&blk)
+          result = nil
           loop do
-            blk.call
+            result = blk.call
             break
           end
+          result
         end
       end
 
