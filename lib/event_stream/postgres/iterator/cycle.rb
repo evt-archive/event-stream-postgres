@@ -6,15 +6,15 @@ module EventStream
         dependency :telemetry, Telemetry
         dependency :logger, Telemetry::Logger
 
-        def timeout_milliseconds
-          @timeout_milliseconds ||= Defaults.delay_milliseconds
+        def delay_milliseconds
+          @delay_milliseconds ||= Defaults.delay_milliseconds
         end
 
         def delay_condition
           @delay_condition ||= Defaults.delay_condition
         end
 
-        initializer :delay_milliseconds, na(:timeout_milliseconds), na(:delay_condition)
+        initializer na(:delay_milliseconds), :timeout_milliseconds, na(:delay_condition)
 
         def self.build(delay_milliseconds: nil, timeout_milliseconds: nil, delay_condition: nil)
           new(delay_milliseconds, timeout_milliseconds, delay_condition).tap do |instance|
