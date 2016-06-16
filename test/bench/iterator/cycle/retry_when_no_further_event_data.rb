@@ -5,8 +5,7 @@ controls = EventStream::Postgres::Controls
 context "Iterator" do
   context "Cycle" do
     context "Retry when no further event data" do
-      delay_condition = lambda { |batch| batch.empty? }
-      cycle = Iterator::Cycle.build(delay_milliseconds: 10, timeout_milliseconds: 100, delay_condition: delay_condition)
+      cycle = Iterator::Cycle.build(delay_milliseconds: 10, timeout_milliseconds: 100)
 
       sink = Iterator::Cycle.register_telemetry_sink(cycle)
 
