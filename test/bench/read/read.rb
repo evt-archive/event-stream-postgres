@@ -11,8 +11,6 @@ context "Read" do
     batch << event_data
   end
 
-  __logger.focus batch.length
-
   test "Reads batches of events" do
     assert(batch.length == 2)
   end

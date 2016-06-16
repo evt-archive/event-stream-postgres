@@ -18,6 +18,7 @@ Gem::Specification.new do |s|
   s.executables = ['install-event-stream-database', 'uninstall-event-stream-database']
   s.bindir = 'bin'
 
+  s.add_runtime_dependency 'telemetry'
   s.add_runtime_dependency 'telemetry-logger'
   s.add_runtime_dependency 'casing'
   s.add_runtime_dependency 'schema'

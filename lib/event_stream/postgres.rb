@@ -7,6 +7,7 @@ require 'schema'
 require 'initializer'; Initializer.activate
 require 'serialize'
 require 'settings'; Settings.activate
+require 'telemetry'
 require 'telemetry/logger'
 require 'async_invocation'
 
@@ -27,6 +28,7 @@ require 'event_stream/postgres/write'
 
 require 'event_stream/postgres/get/select_statement'
 require 'event_stream/postgres/get'
+require 'event_stream/postgres/iterator/cycle'
 require 'event_stream/postgres/iterator'
 require 'event_stream/postgres/read'
 

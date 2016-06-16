@@ -15,21 +15,23 @@ module EventStream
         @stream_offset ||= (stream_position || 0)
       end
 
-      initializer :stream_name, :category, a(:stream_position, 0), :batch_size, :precedence
-
       dependency :get, Get
+      dependency :cycle, Cycle
       dependency :logger, Telemetry::Logger
 
-      def self.build(stream_name: nil, category: nil, stream_position: nil, batch_size: nil, precedence: nil, session: nil)
+      initializer :stream_name, :category, a(:stream_position, 0), :batch_size, :precedence
+
+      def self.build(stream_name: nil, category: nil, stream_position: nil, batch_size: nil, precedence: nil, session: nil, cycle: nil)
         new(stream_name, category, stream_position, batch_size, precedence).tap do |instance|
           Get.configure instance, stream_name: stream_name, category: category, batch_size: batch_size, precedence: precedence, session: session
           Telemetry::Logger.configure instance
+          instance.cycle = cycle unless cycle.nil?
         end
       end
 
-      def self.configure(receiver, attr_name: nil, stream_name: nil, category: nil, stream_position: nil, batch_size: nil, precedence: nil, session: nil)
+      def self.configure(receiver, attr_name: nil, stream_name: nil, category: nil, stream_position: nil, batch_size: nil, precedence: nil, session: nil, cycle: nil)
         attr_name ||= :iterator
-        instance = build(stream_name: stream_name, category: category, stream_position: stream_position, batch_size: batch_size, precedence: precedence, session: session)
+        instance = build(stream_name: stream_name, category: category, stream_position: stream_position, batch_size: batch_size, precedence: precedence, session: session, cycle: cycle)
         receiver.public_send "#{attr_name}=", instance
       end
 
@@ -83,7 +85,10 @@ module EventStream
       def get_batch
         logger.opt_trace "Getting batch"
 
-        batch = get.(stream_position: stream_offset)
+        batch = nil
+        cycle.() do
+          batch = get.(stream_position: stream_offset)
+        end
 
         logger.opt_debug "Finished getting batch (Count: #{batch.length})"
 
