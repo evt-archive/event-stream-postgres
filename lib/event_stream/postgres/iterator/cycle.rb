@@ -149,7 +149,13 @@ module EventStream
           end
 
           def self.delay_condition
-            lambda { |result| result.nil? }
+            lambda do |result|
+              if result.respond_to? :empty?
+                result.empty?
+              else
+                result.nil?
+              end
+            end
           end
         end
       end
