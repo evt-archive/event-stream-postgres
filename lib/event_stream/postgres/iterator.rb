@@ -21,17 +21,17 @@ module EventStream
 
       initializer :stream_name, :category, a(:stream_position, 0), :batch_size, :precedence
 
-      def self.build(stream_name: nil, category: nil, stream_position: nil, batch_size: nil, precedence: nil, session: nil, cycle: nil)
+      def self.build(stream_name: nil, category: nil, stream_position: nil, batch_size: nil, precedence: nil, delay_milliseconds: nil, timeout_milliseconds: nil, cycle: nil, session: nil)
         new(stream_name, category, stream_position, batch_size, precedence).tap do |instance|
           Get.configure instance, stream_name: stream_name, category: category, batch_size: batch_size, precedence: precedence, session: session
           Telemetry::Logger.configure instance
-          instance.cycle = cycle unless cycle.nil?
+          Iterator::Cycle.configure instance, delay_milliseconds: delay_milliseconds, timeout_milliseconds: timeout_milliseconds, cycle: cycle
         end
       end
 
-      def self.configure(receiver, attr_name: nil, stream_name: nil, category: nil, stream_position: nil, batch_size: nil, precedence: nil, session: nil, cycle: nil)
+      def self.configure(receiver, attr_name: nil, stream_name: nil, category: nil, stream_position: nil, batch_size: nil, precedence: nil, delay_milliseconds: nil, timeout_milliseconds: nil, cycle: nil, session: nil)
         attr_name ||= :iterator
-        instance = build(stream_name: stream_name, category: category, stream_position: stream_position, batch_size: batch_size, precedence: precedence, session: session, cycle: cycle)
+        instance = build(stream_name: stream_name, category: category, stream_position: stream_position, batch_size: batch_size, precedence: precedence, delay_milliseconds: delay_milliseconds, timeout_milliseconds: timeout_milliseconds, cycle: cycle, session: session)
         receiver.public_send "#{attr_name}=", instance
       end
 
