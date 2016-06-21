@@ -24,8 +24,14 @@ module EventStream
 
         def self.configure(receiver, attr_name: nil, delay_milliseconds: nil, timeout_milliseconds: nil, delay_condition: nil)
           attr_name ||= :cycle
-          instance = build(delay_milliseconds: delay_milliseconds, timeout_milliseconds: timeout_milliseconds, delay_condition: delay_condition)
-          instance.public_send "#{attr_name}=", instance
+
+          if delay_milliseconds.nil? && timeout_milliseconds.nil?
+            instance = None.build
+          else
+            instance = build(delay_milliseconds: delay_milliseconds, timeout_milliseconds: timeout_milliseconds, delay_condition: delay_condition)
+          end
+
+          receiver.public_send "#{attr_name}=", instance
         end
 
         def configure
